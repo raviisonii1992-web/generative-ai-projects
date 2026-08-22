@@ -8,13 +8,19 @@ Each generate/edit call costs a few cents. Do not loop endlessly.
 
 ## Setup
 
-From this folder:
+**Python 3.10+ is required** (3.12 recommended). `openai` and Gradio no longer install cleanly on 3.8.
+
+If `python -V` shows 3.8 (typical when conda `base` is active), do **not** use `python -m venv`. Use 3.12 explicitly:
 
 ```bash
-python -m venv .venv
+cd Image_Studio
+python3.12 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+If `.venv` was already created with 3.8, delete it first: `rm -rf .venv`, then run the commands above.
 
 Put your OpenAI key in a `.env` file in this folder **or** in the course repo root:
 
@@ -30,7 +36,17 @@ python image_studio.py
 
 Open the local URL Gradio prints (usually `http://127.0.0.1:7860`).
 
-You can also run `image_studio.ipynb` in Jupyter with the course environment.
+You can also run `image_studio.ipynb`. Cursor often does not list a venv that lives in a subfolder.
+
+1. Open the notebook.
+2. Click **Select Kernel** (top right) → **Select Another Kernel** → **Python Environments**.
+3. If **Image_Studio/.venv** is not listed, choose **Enter interpreter path…** and paste:
+
+   `/Users/ravi1992/projects/generative-ai-projects/Image_Studio/.venv/bin/python`
+
+4. Re-run the import cell.
+
+This workspace also sets that path as the default Python interpreter (`.vscode/settings.json`). Reload the window if the kernel list is stale: Command Palette → **Developer: Reload Window**.
 
 ## How to use
 
