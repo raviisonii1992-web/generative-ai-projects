@@ -261,6 +261,12 @@ See the [LICENSE](./LICENSE) file for details.
 ---
 
 ## 👨‍💻 Author
+Ravi Soni
+
+## 📜 License
+
+This project is licensed under the MIT License. See the
+[LICENSE](../LICENSE) file for details.
 
 **Ravi Soni**
 
