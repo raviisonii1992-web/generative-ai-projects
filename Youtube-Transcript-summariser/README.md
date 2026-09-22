@@ -97,3 +97,9 @@ Paste any question or snippet into `QUESTION` in the usage cell.
 ### Custom prompts
 
 `ask_llm(messages, provider=..., model=...)` is the shared streaming helper if you want your own system/user messages.
+
+
+## 📜 License
+
+This project is licensed under the MIT License. See the
+[LICENSE](../LICENSE) file for details.
