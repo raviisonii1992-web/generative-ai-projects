@@ -108,10 +108,10 @@ Repo conversion is meant for small projects. Very large trees are truncated so t
 
 ## 🎬 Demo
 
-See the **Python → C++ Converter** in action.
+See the **Python → C++ Converter** in action:
 
-▶️ [Watch the 33-second demo](./assets/python_to_cpp_demo.mp4)
-
-The demo shows Python code being converted to C++, executed, and compared for performance.
-
-> 🚀 More functionality and a cloud-hosted version are coming soon.
+<p align="center">
+  <img src="./assets/python_to_cpp_demo.gif"
+       alt="Python to C++ Converter Demo"
+       width="100%">
+</p>
