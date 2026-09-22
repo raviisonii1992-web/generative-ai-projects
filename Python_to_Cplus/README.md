@@ -105,3 +105,13 @@ Repo conversion is meant for small projects. Very large trees are truncated so t
 - **Ollama connection error** — confirm `ollama serve` is running and the model name matches `ollama list`.
 - **Windows `cl` not found** — open “x64 Native Tools Command Prompt for VS” (or equivalent) before `python app.py`, or use `clang++` / MinGW `g++` instead.
 - **Permission / venv issues** — delete `.venv` and recreate it with the commands above.
+
+## 🎬 Demo
+
+See the **Python → C++ Converter** in action.
+
+▶️ [Watch the 33-second demo](./assets/python_to_cpp_demo.mp4)
+
+The demo shows Python code being converted to C++, executed, and compared for performance.
+
+> 🚀 More functionality and a cloud-hosted version are coming soon.
