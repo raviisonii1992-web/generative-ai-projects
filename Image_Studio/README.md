@@ -65,3 +65,8 @@ This workspace also sets that path as the default Python interpreter (`.vscode/s
 - If there is a saved picture, it calls `openai.images.edit` with that PNG.
 - The last PIL image is kept in Gradio `State` (`current_image`) so follow-up prompts modify the same canvas.
 - Model: `gpt-image-1-mini` at `1024x1024`.
+
+## 📜 License
+
+This project is licensed under the MIT License. See the
+[LICENSE](../LICENSE) file for details.
