@@ -1,0 +1,8 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/Image_Studio/.venv/bin/python",
+  "python.venvPath": "${workspaceFolder}/Image_Studio",
+  "python.terminal.activateEnvironment": true,
+  "jupyter.kernels.trusted": [
+    "${workspaceFolder}/Image_Studio/.venv/bin/python"
+  ]
+}

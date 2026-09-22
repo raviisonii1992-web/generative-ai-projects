@@ -15,7 +15,7 @@ The repository explores practical applications of Large Language Models — from
 | 🎨 **[Image Studio](./Image_Studio)**                                   | Generate an image from a prompt and iteratively edit the same image through natural-language instructions.      | Python, OpenAI, Gradio            |
 | 📺 **[YouTube Transcript Summariser](./Youtube-Transcript-summariser)** | Fetch YouTube transcripts and generate structured Markdown summaries using cloud or local LLMs.                 | Python, OpenAI, Ollama, Jupyter   |
 | 🧠 **[3-Way LLM Debate](./three-way-llm-debate)**                       | Run turn-based debates between three AI personas using different LLM providers or local Ollama models.          | OpenAI, Anthropic, Gemini, Ollama |
-| ⚡ **[Python → C++](./Python_to_Cplus)**                                 | Convert Python snippets or small projects to C++, compile them, execute both versions, and compare performance. | Python, C++, LLMs, Gradio         |
+| ⚡ **[CppLift](./Python_to_Cplus)**                                      | Convert Python snippets or small repos to C++ with cloud or local (Ollama) models, compile on this machine, and compare runtimes. App lives in `Python_to_Cplus/`. | Python, C++, Gradio, OpenAI, Anthropic, Gemini, Groq, Ollama |
 
 Each project is self-contained and includes its own README, dependencies, and setup instructions.
 
@@ -33,6 +33,9 @@ Each project is self-contained and includes its own README, dependencies, and se
 * OpenAI
 * Anthropic Claude
 * Google Gemini
+* xAI Grok
+* Groq
+* OpenRouter
 * Ollama
 
 **Tools & Frameworks**
@@ -98,6 +101,10 @@ Create a `.env` file inside the project folder or repository root:
 OPENAI_API_KEY=your_key
 ANTHROPIC_API_KEY=your_key
 GOOGLE_API_KEY=your_key
+GROK_API_KEY=your_key
+GROQ_API_KEY=your_key
+OPENROUTER_API_KEY=your_key
+ARTIFICIAL_ANALYSIS_API_KEY=your_key
 ```
 
 **Never commit your `.env` file or API keys to GitHub.**
@@ -119,14 +126,20 @@ Open the generated Gradio URL in your browser.
 
 ---
 
-### ⚡ Python → C++
+### ⚡ CppLift
+
+The product name is **CppLift**. The folder is still `Python_to_Cplus`.
 
 ```bash
 cd Python_to_Cplus
 python app.py
 ```
 
-The application can convert Python code to C++, compile it when a compatible compiler is available, execute both versions, and compare their runtime.
+Open http://127.0.0.1:7860.
+
+Use **Snippet** or **Repo** with the shared Provider / Model bar. Switch **Cloud** (API providers + Refresh catalog) or **Local** (Ollama download on this machine). **System** lists the compiler; **Scores** and **Suggest** help pick a model. Convert, compile, and compare Python vs C++ runtimes. Generated repos land in `Python_to_Cplus/generated/cpp_project` — run with `./app` after a successful build.
+
+Step-by-step UI instructions (Cloud/Local, convert, compile repair, Scores, Suggest) are in [Python_to_Cplus/README.md](./Python_to_Cplus/README.md#user-instructions).
 
 ---
 
@@ -187,7 +200,7 @@ generative-ai-projects/
 │
 ├── three-way-llm-debate/
 │
-├── Python_to_Cplus/
+├── Python_to_Cplus/          # CppLift (Python → C++ app)
 │
 ├── .gitignore
 ├── LICENSE
@@ -261,12 +274,6 @@ See the [LICENSE](./LICENSE) file for details.
 ---
 
 ## 👨‍💻 Author
-Ravi Soni
-
-## 📜 License
-
-This project is licensed under the MIT License. See the
-[LICENSE](../LICENSE) file for details.
 
 **Ravi Soni**
 

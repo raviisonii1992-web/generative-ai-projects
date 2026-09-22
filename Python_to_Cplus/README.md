@@ -1,13 +1,13 @@
-# Python → C++ converter (Gradio)
+# CppLift
 
-Turn a Python snippet or a small Python repo into C++ using an LLM, then compile with a command chosen for **this machine**.
+**CppLift** turns a Python snippet or a small Python repo into C++ with an LLM, then compiles and runs it on **this machine**.
 
-Works on macOS, Linux, and Windows as long as Python 3.11+ is installed. A C++ compiler is only required if you click **Compile & run**.
+The Gradio app lives in `Python_to_Cplus/`. Works on macOS, Linux, and Windows with Python 3.11+. A C++ compiler is only required if you click **Compile & run**.
 
 ## What you need
 
 1. **Python 3.11 or newer** (`python3 --version` / `py --version`). On macOS, `/usr/bin/python3` can still be 3.8 — use `python3.12` or `python3.11` if needed.
-2. An **API key** for at least one provider, **or** [Ollama](https://ollama.com) running locally
+2. An **API key** for at least one cloud provider, **or** [Ollama](https://ollama.com) for local models
 3. Optional, for compiling: a C++ toolchain
    - **macOS:** `xcode-select --install` (Apple Clang). Optional: `brew install cmake ninja`
    - **Linux (Debian/Ubuntu):** `sudo apt install -y build-essential cmake ninja-build`
@@ -16,7 +16,7 @@ Works on macOS, Linux, and Windows as long as Python 3.11+ is installed. A C++ c
 
 ## Setup (all platforms)
 
-Open a terminal in this folder (`week4/Python_to_Cplus`).
+Open a terminal in this folder (`Python_to_Cplus`).
 
 ### macOS / Linux
 
@@ -62,13 +62,13 @@ cp .env.example .env
 
 On Windows (Command Prompt): `copy .env.example .env`
 
-You can also paste a key in the Gradio UI. The UI key overrides `.env` for that request. Keys typed in the UI are not written to disk.
+Supported providers: **OpenAI**, **Anthropic**, **Google Gemini**, **xAI Grok**, **Groq**, **OpenRouter**, and **Ollama (local)**.
 
-Ollama needs no cloud key. Start the daemon and pull a code model, for example:
+You can also paste a key in the UI. The UI key overrides `.env` for that request and is not written to disk.
 
-```bash
-ollama pull qwen2.5-coder
-```
+For the **Scores** tab, set `ARTIFICIAL_ANALYSIS_API_KEY` (from [Artificial Analysis](https://artificialanalysis.ai)) or paste it there. That key is only used when you click **Load leaderboard**.
+
+Ollama needs no cloud key.
 
 ## Run the app
 
@@ -80,39 +80,126 @@ python app.py
 
 Then open the URL Gradio prints (usually http://127.0.0.1:7860).
 
-## How to use it
+## User instructions
 
-1. **System & compile command** — confirms OS, CPU, and compiler. Edit the compile/run lines if you want different flags.
-2. **Snippet** — Python on the left, C++ on the right. Convert, then **Run Python**, **Compile & run C++** (live compiler log), or **Run both & compare** for a timing table. **C++ repeats** runs the binary several times so the first (cold) run does not dominate.
-3. **Python repo** — folder path or `.zip`. The model writes `generated/cpp_project`. Build with **Build & run generated C++ project**.
+The top bar is **Snippet · Repo · System · Scores · Suggest**. Use **Light / Dark** at the right of that bar.
 
-Repo conversion is meant for small projects. Very large trees are truncated so the prompt stays within model context.
+**Provider**, **Model**, **API key**, and **Cloud / Local** only show on **Snippet** and **Repo**. They stay in sync between those two pages. **System**, **Scores**, and **Suggest** do not need them.
+
+### 1. Pick a model (Snippet or Repo)
+
+1. Stay on **Snippet** or **Repo**.
+2. Choose **Cloud** or **Local** under the model row.
+
+**Cloud**
+
+1. Set **Provider** (OpenAI, Anthropic, Google Gemini, xAI Grok, Groq, or OpenRouter).
+2. Set **Model**. If the list looks stale, click **Refresh catalog** (does not run at startup). Retired ids are dropped; the log says what is still working today.
+3. Leave **API key** empty if the matching variable is already in `.env`. Paste a key only to override for this session. UI keys are not saved to disk.
+
+**Local**
+
+1. Click **Local**. CppLift probes Ollama, shows this machine’s RAM, and lists models already on disk.
+2. Pick a suggested model (or an installed one).
+3. Click **Download & use**. Watch the progress panel. If you need to cancel, click **Stop download & clean** (that also deletes the incomplete pull).
+4. When it is ready, **Provider** is **Ollama (local)** and Convert needs no cloud key. If Ollama is missing, follow the install hint in the panel, then run `ollama serve`.
+
+The line under the dropdowns is the **token bar**: context-window size for the selected model. After a conversion it also shows prompt/completion tokens, latency, and estimated $ (local Ollama is $0).
+
+### 2. Convert a snippet
+
+1. Open **Snippet**.
+2. Paste or edit Python on the left (a sample is already there).
+3. Click **Convert to C++**. Status shows **Converting…**, then **Done** with the token/cost line. Generated C++ appears on the right.
+4. Optional:
+   - **Run Python** — execute the left pane.
+   - **Compile & run** — compile `generated/main.cpp` with the **System** compile command, then run it. **C++ repeats** (1–5) times the C++ binary for a more stable wall-clock average.
+   - **Compare both** — run Python and C++, then show timing plus last-convert tokens / latency / $.
+   - **Stop** — cancel convert, Python, or C++ that is still running so you can edit and try again.
+
+If compile fails, CppLift sends the compiler log back to the same model (up to 4 repair passes), writes a successful fix into `generated/repair_memory.json`, and retries. Later compiles can reuse that memory.
+
+### 3. Convert a small Python repo
+
+1. Open **Repo**.
+2. Enter a local folder path, or upload a `.zip`.
+3. Click **Convert repo to C++**. Output is `generated/cpp_project` (`CMakeLists.txt` + `src/`). Very large trees are truncated so the prompt fits the model context.
+4. Click **Build & run** to configure/build (CMake when available, otherwise a direct compiler line) and run the binary. **Stop run** cancels that job.
+
+From a terminal, after a successful build:
+
+```bash
+cd generated/cpp_project
+./app
+```
+
+Rebuild after you edit the C++:
+
+```bash
+clang++ -std=c++17 -O3 -o app src/main.cpp
+./app
+```
+
+On Windows the binary is `app.exe`. With CMake: `cmake -S . -B build && cmake --build build`, then run `build/app` (or `build/Release/app.exe` on MSVC).
+
+Interactive programs (games, prompts) work best from this terminal, not from the Gradio log box.
+
+### 4. Check the toolchain (System)
+
+1. Open **System**.
+2. Read OS, CPU, SIMD, and detected compilers.
+3. Edit **Snippet compile command** and **Snippet run command** if you want different flags (sanitizers, another compiler).
+4. After installing a toolchain, click **Re-scan this machine**.
+
+### 5. Compare models (Scores)
+
+1. Open **Scores**.
+2. Optionally paste an Artificial Analysis `x-api-key`, or set `ARTIFICIAL_ANALYSIS_API_KEY` in `.env`.
+3. Click **Load leaderboard**. Nothing is downloaded until you do.
+4. Use the table (intelligence, coding, speed, price) to decide which convert model to pick back on **Snippet** / **Repo**.
+
+### 6. Get a recommendation (Suggest)
+
+1. Open **Suggest**.
+2. Choose a category: Coding / Python → C++, General intelligence, Math / reasoning, Speed, Low latency, Lowest cost, or Local (Ollama).
+3. Click **Get suggestions**. If you already loaded Scores, ranks come from Artificial Analysis; otherwise CppLift uses built-in defaults.
+4. Switch back to **Snippet** or **Repo** and select that provider/model.
+
+### Typical first run
+
+1. `python app.py` → open http://127.0.0.1:7860
+2. **Snippet** → **Cloud** → Provider + Model (or **Local** → **Download & use**)
+3. **Convert to C++** → wait for **Done**
+4. **Compare both**
+5. Or **Repo** → folder or zip → **Convert repo to C++** → **Build & run** / `./app`
 
 ## Layout
 
 | File | Role |
 | --- | --- |
-| `app.py` | Gradio UI and compile/run wiring |
+| `app.py` | Gradio UI (nav, Cloud/Local, convert, compile) |
 | `compiler.py` | Detect toolchain and pick compile commands |
-| `converter.py` | Provider clients and Python → C++ prompts |
-| `system_info.py` | OS / CPU / compiler inventory |
-| `generated/` | Written C++ (`main.cpp` or a CMake project) |
+| `converter.py` | Provider clients, Python → C++ prompts, usage stats |
+| `model_catalog.py` | Live model lists, Ollama probe/pull, Scores / Suggest |
+| `research.py` | Token/cost line and compile-error repair memory |
+| `runner.py` | Stream subprocess output and **Stop** |
+| `generated/` | Written C++ (`main.cpp` or a CMake `cpp_project`) |
 
 ## Troubleshooting
 
-- **No API key** — set the matching variable in `.env` or paste it in the UI.
-- **No compiler** — install one using the hints on the System tab, then click **Re-scan this machine**.
-- **Ollama connection error** — confirm `ollama serve` is running and the model name matches `ollama list`.
+- **No API key** — set the matching variable in `.env` or paste it in the UI on Snippet/Repo.
+- **No compiler** — install one using the hints on **System**, then **Re-scan this machine**.
+- **Ollama connection error** — open the **Local** tab. If it is not installed, follow the download hint. If it is installed, run `ollama serve`, pick a suggested model, then **Download & use**.
 - **Windows `cl` not found** — open “x64 Native Tools Command Prompt for VS” (or equivalent) before `python app.py`, or use `clang++` / MinGW `g++` instead.
 - **Permission / venv issues** — delete `.venv` and recreate it with the commands above.
 
 ## 🎬 Demo
 
-See the **Python → C++ Converter** in action:
+See **CppLift** in action:
 
 <p align="center">
   <img src="./assets/python_to_cpp_demo.gif"
-       alt="Python to C++ Converter Demo"
+       alt="CppLift demo"
        width="100%">
 </p>
 

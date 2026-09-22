@@ -4,9 +4,31 @@ from __future__ import annotations
 
 import os
 import subprocess
+import threading
 import time
 from collections.abc import Iterator
 from pathlib import Path
+
+_lock = threading.Lock()
+_active: list[subprocess.Popen] = []
+
+
+def kill_active() -> str:
+    """Stop Python/C++ subprocesses so the user can edit and run again."""
+    with _lock:
+        procs = list(_active)
+    stopped = 0
+    for proc in procs:
+        if proc.poll() is None:
+            proc.kill()
+            stopped += 1
+            try:
+                proc.wait(timeout=5)
+            except Exception:
+                pass
+    if stopped:
+        return "Stopped. You can change the program and run again."
+    return "Nothing was running."
 
 
 def stream_command(
@@ -40,6 +62,9 @@ def stream_command(
         yield str(exc), True, 1, time.perf_counter() - start
         return
 
+    with _lock:
+        _active.append(proc)
+
     chunks: list[str] = []
     deadline = start + timeout
     try:
@@ -64,10 +89,24 @@ def stream_command(
                     chunks.append(rest)
                 break
             time.sleep(0.04)
+    except GeneratorExit:
+        if proc.poll() is None:
+            proc.kill()
+            try:
+                proc.wait(timeout=5)
+            except Exception:
+                pass
+        raise
     finally:
         if proc.poll() is None:
             proc.kill()
-            proc.wait(timeout=5)
+            try:
+                proc.wait(timeout=5)
+            except Exception:
+                pass
+        with _lock:
+            if proc in _active:
+                _active.remove(proc)
 
     elapsed = time.perf_counter() - start
     yield "".join(chunks), True, proc.returncode, elapsed
