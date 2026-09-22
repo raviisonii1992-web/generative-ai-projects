@@ -115,3 +115,8 @@ See the **Python → C++ Converter** in action:
        alt="Python to C++ Converter Demo"
        width="100%">
 </p>
+
+## 📜 License
+
+This project is licensed under the MIT License. See the
+[LICENSE](../LICENSE) file for details.
