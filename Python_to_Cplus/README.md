@@ -4,6 +4,8 @@
 
 The Gradio app lives in `Python_to_Cplus/`. Works on macOS, Linux, and Windows with Python 3.11+. A C++ compiler is only required if you click **Compile & run**.
 
+The window is a studio that stays inside the browser. The left rail is the section list. The center is the work area. The bottom bar is the model and the convert action. Zooming the browser rescales that layout; panels scroll inside themselves when the window is short.
+
 ## What you need
 
 1. **Python 3.11 or newer** (`python3 --version` / `py --version`). On macOS, `/usr/bin/python3` can still be 3.8 — use `python3.12` or `python3.11` if needed.
@@ -82,14 +84,22 @@ Then open the URL Gradio prints (usually http://127.0.0.1:7860).
 
 ## User instructions
 
-The top bar is **Snippet · Repo · System · Scores · Suggest**. Use **Light / Dark** at the right of that bar.
+Open the URL Gradio prints. The app uses the full browser window.
 
-**Provider**, **Model**, **API key**, and **Cloud / Local** only show on **Snippet** and **Repo**. They stay in sync between those two pages. **System**, **Scores**, and **Suggest** do not need them.
+| Area | What it is |
+| --- | --- |
+| Left rail | **Snippet**, **Repo**, **System**, **Scores**, **Suggest**. **Appearance** (Light / Dark) is under the list. |
+| Center | The page for the selected section. On **Snippet**, Python is above or beside the generated C++, depending on window width. Output and timing sit under the editors. |
+| Bottom bar | Shown only on **Snippet** and **Repo**. **Cloud / Local**, **Provider**, **Model**, **API key**, the token line, and the action buttons (**Convert to C++**, **Run Python**, **Compile & run**, **Compare both**, **Stop**, **C++ repeats**). On **Repo** the actions are **Convert repo to C++**, **Build & run**, and **Stop run**. |
+
+**Provider**, **Model**, and **API key** stay in sync when you move between **Snippet** and **Repo**. **System**, **Scores**, and **Suggest** hide the bottom bar.
+
+If you zoom in and the window is tight, the rail stays a vertical list, the editors stack, and the action buttons wrap. Scroll inside the center or the bottom bar to reach anything that does not fit.
 
 ### 1. Pick a model (Snippet or Repo)
 
-1. Stay on **Snippet** or **Repo**.
-2. Choose **Cloud** or **Local** under the model row.
+1. Stay on **Snippet** or **Repo** so the bottom bar is visible.
+2. Choose **Cloud** or **Local** at the top of that bar.
 
 **Cloud**
 
@@ -177,7 +187,7 @@ Interactive programs (games, prompts) work best from this terminal, not from the
 
 | File | Role |
 | --- | --- |
-| `app.py` | Gradio UI (nav, Cloud/Local, convert, compile) |
+| `app.py` | Gradio studio UI (left rail, work area, bottom model bar, convert, compile) |
 | `compiler.py` | Detect toolchain and pick compile commands |
 | `converter.py` | Provider clients, Python → C++ prompts, usage stats |
 | `model_catalog.py` | Live model lists, Ollama probe/pull, Scores / Suggest |
@@ -189,7 +199,7 @@ Interactive programs (games, prompts) work best from this terminal, not from the
 
 - **No API key** — set the matching variable in `.env` or paste it in the UI on Snippet/Repo.
 - **No compiler** — install one using the hints on **System**, then **Re-scan this machine**.
-- **Ollama connection error** — open the **Local** tab. If it is not installed, follow the download hint. If it is installed, run `ollama serve`, pick a suggested model, then **Download & use**.
+- **Ollama connection error** — on **Snippet** or **Repo**, click **Local** in the bottom bar. If Ollama is not installed, follow the download hint. If it is installed, run `ollama serve`, pick a suggested model, then **Download & use**.
 - **Windows `cl` not found** — open “x64 Native Tools Command Prompt for VS” (or equivalent) before `python app.py`, or use `clang++` / MinGW `g++` instead.
 - **Permission / venv issues** — delete `.venv` and recreate it with the commands above.
 

@@ -33,6 +33,19 @@ def _aa_key(override: str | None = None) -> str:
     )
 
 
+def _ssl_verify() -> bool | str:
+    val = os.getenv("AA_SSL_VERIFY") or os.getenv("SSL_VERIFY")
+    if val is not None and val.strip().lower() in ("0", "false", "no", "off"):
+        return False
+    bundle = (
+        os.getenv("SSL_CERT_FILE")
+        or os.getenv("REQUESTS_CA_BUNDLE")
+        or os.getenv("CURL_CA_BUNDLE")
+    )
+    if bundle and os.path.isfile(bundle):
+        return bundle
+    return True
+
 def _num(value: Any) -> float | None:
     if value is None or value == "":
         return None
@@ -97,9 +110,19 @@ def fetch_aa_leaderboard(api_key: str | None = None) -> list[dict]:
             "and set ARTIFICIAL_ANALYSIS_API_KEY, or paste it on the Artificial Analysis tab."
         )
     last = ""
-    with httpx.Client(timeout=45.0) as client:
+    verify = _ssl_verify()
+    with httpx.Client(timeout=45.0, verify=verify) as client:
         for url, params in AA_ENDPOINTS:
-            response = client.get(url, headers={"x-api-key": key}, params=params)
+            try:
+                response = client.get(url, headers={"x-api-key": key}, params=params)
+            except (httpx.ConnectError, httpx.RequestError) as exc:
+                if "CERTIFICATE_VERIFY_FAILED" in str(exc) or "certificate verify failed" in str(exc):
+                    raise RuntimeError(
+                        f"SSL verification failed when connecting to Artificial Analysis ({url}). "
+                        "This occurs behind corporate proxies, VPNs, or antivirus with HTTPS inspection. "
+                        "Add 'SSL_VERIFY=false' or 'SSL_CERT_FILE=path/to/cert.pem' to your .env file."
+                    ) from exc
+                raise
             if response.status_code == 200:
                 rows = parse_aa_models(response.json())
                 if rows:

@@ -45,9 +45,18 @@ def stream_command(
     merged_env = os.environ.copy()
     if env:
         merged_env.update(env)
+    exec_cmd = list(cmd)
+    if cwd and exec_cmd:
+        target = Path(exec_cmd[0])
+        if not target.is_absolute():
+            candidate = (Path(cwd) / target).resolve()
+            if candidate.is_file():
+                exec_cmd[0] = str(candidate)
+            elif (Path(cwd) / f"{target}.exe").is_file():
+                exec_cmd[0] = str((Path(cwd) / f"{target}.exe").resolve())
     try:
         proc = subprocess.Popen(
-            cmd,
+            exec_cmd,
             cwd=cwd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,

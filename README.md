@@ -15,7 +15,7 @@ The repository explores practical applications of Large Language Models — from
 | 🎨 **[Image Studio](./Image_Studio)**                                   | Generate an image from a prompt and iteratively edit the same image through natural-language instructions.      | Python, OpenAI, Gradio            |
 | 📺 **[YouTube Transcript Summariser](./Youtube-Transcript-summariser)** | Fetch YouTube transcripts and generate structured Markdown summaries using cloud or local LLMs.                 | Python, OpenAI, Ollama, Jupyter   |
 | 🧠 **[3-Way LLM Debate](./three-way-llm-debate)**                       | Run turn-based debates between three AI personas using different LLM providers or local Ollama models.          | OpenAI, Anthropic, Gemini, Ollama |
-| ⚡ **[CppLift](./Python_to_Cplus)**                                      | Convert Python snippets or small repos to C++ with cloud or local (Ollama) models, compile on this machine, and compare runtimes. App lives in `Python_to_Cplus/`. | Python, C++, Gradio, OpenAI, Anthropic, Gemini, Groq, Ollama |
+| ⚡ **[CppLift](./Python_to_Cplus)**                                      | Studio UI: pick a model in the bottom bar, convert a Python snippet or small repo to C++, then compile on this machine and compare runtimes. App lives in `Python_to_Cplus/`. | Python, C++, Gradio, OpenAI, Anthropic, Gemini, Groq, Ollama |
 
 Each project is self-contained and includes its own README, dependencies, and setup instructions.
 
@@ -135,11 +135,13 @@ cd Python_to_Cplus
 python app.py
 ```
 
-Open http://127.0.0.1:7860.
+Open http://127.0.0.1:7860. The page fills the browser window. Zoom in or out and the sidebar, editors, and bottom bar stay on screen; extra content scrolls inside those areas.
 
-Use **Snippet** or **Repo** with the shared Provider / Model bar. Switch **Cloud** (API providers + Refresh catalog) or **Local** (Ollama download on this machine). **System** lists the compiler; **Scores** and **Suggest** help pick a model. Convert, compile, and compare Python vs C++ runtimes. Generated repos land in `Python_to_Cplus/generated/cpp_project` — run with `./app` after a successful build.
+The left rail is **Snippet**, **Repo**, **System**, **Scores**, and **Suggest**. **Appearance** (Light / Dark) is under that list. On **Snippet** and **Repo**, the bottom bar is where you choose **Cloud** or **Local**, then **Provider**, **Model**, and **API key**, and where you press **Convert to C++** (or **Convert repo to C++**). **System**, **Scores**, and **Suggest** hide that bar.
 
-Step-by-step UI instructions (Cloud/Local, convert, compile repair, Scores, Suggest) are in [Python_to_Cplus/README.md](./Python_to_Cplus/README.md#user-instructions).
+Generated repos land in `Python_to_Cplus/generated/cpp_project`. After a successful build, run `./app` from that folder (`app.exe` on Windows).
+
+Step-by-step UI instructions are in [Python_to_Cplus/README.md](./Python_to_Cplus/README.md#user-instructions).
 
 ---
 

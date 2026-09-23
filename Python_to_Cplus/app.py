@@ -83,51 +83,190 @@ print(f"Execution Time: {(end_time - start_time):.6f} seconds")
 '''
 
 THEME = gr.themes.Soft(
-    primary_hue="slate",
-    secondary_hue="slate",
-    neutral_hue="slate",
+    primary_hue="zinc",
+    secondary_hue="zinc",
+    neutral_hue="zinc",
 ).set(
-    body_background_fill="#ffffff",
-    body_background_fill_dark="#0b0f19",
-    block_background_fill="#ffffff",
-    block_background_fill_dark="#111827",
+    body_background_fill="#f4f4f5",
+    body_background_fill_dark="#09090b",
+    block_background_fill="transparent",
+    block_background_fill_dark="#16161a",
     block_border_width="0px",
     block_shadow="none",
-    button_primary_background_fill="#111827",
-    button_primary_background_fill_hover="#000000",
-    button_primary_text_color="#ffffff",
+    button_primary_background_fill="#ffe14a",
+    button_primary_background_fill_hover="#ffd21e",
+    button_primary_text_color="#111111",
+    button_primary_background_fill_dark="#ffe14a",
+    button_primary_background_fill_hover_dark="#ffd21e",
+    button_primary_text_color_dark="#111111",
 )
 
 CSS = """
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
 .gradio-container {
-  max-width: 90vw !important;
-  width: 90vw !important;
-  margin: 0 auto !important;
-  padding: 0 12px 32px !important;
-}
-.hf-bar {
-  align-items: center !important;
-  border-bottom: 1px solid #e5e7eb;
-  margin: 0 -12px 18px -12px;
-  padding: 8px 12px 0;
-  background: #fff;
-}
-.hf-brand {
-  min-width: 110px;
-}
-.hf-brand h1 {
-  font-size: 1.2rem !important;
-  letter-spacing: -0.04em;
-  margin: 0 0 8px !important;
-  font-weight: 800 !important;
-  color: #0b0f19 !important;
-}
-.hf-brand p { display: none !important; }
-.hf-nav {
+  max-width: 100% !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  background: transparent !important;
+  background: #09090b !important;
+  color: #f4f4f5;
+  overflow: hidden !important;
 }
+footer, .built-with { display: none !important; }
+.app.fillable,
+.app.fillable > .wrap,
+.app.fillable > .wrap > .contain,
+.app.fillable > .wrap > .contain > .column {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+.studio {
+  display: grid !important;
+  grid-template-columns: clamp(10.5rem, 18vw, 15rem) minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  background: #09090b;
+}
+.rail {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  background: #101012 !important;
+  border-right: 1px solid #24242a !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: clamp(8px, 1.2dvh, 18px) clamp(6px, 0.8vw, 12px) !important;
+  gap: 6px !important;
+}
+.main {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  background: #09090b !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  flex-wrap: nowrap !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  display: flex !important;
+}
+.stage {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  height: auto !important;
+  overflow: auto !important;
+  padding: clamp(8px, 1.2vh, 16px) clamp(8px, 1.2vw, 18px) 8px !important;
+  gap: 10px !important;
+  background: transparent !important;
+  border: none !important;
+  flex-wrap: nowrap !important;
+}
+.stage .row, .composer .row {
+  flex-wrap: wrap !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+.stage .row > *, .composer .row > * {
+  flex: 1 1 min(100%, 18rem) !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.composer {
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: min(46dvh, 100%) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  margin: 0 clamp(8px, 1vw, 14px) clamp(8px, 1vh, 12px) !important;
+  background: #16161a !important;
+  border: 1px solid #2c2c34 !important;
+  border-radius: 20px !important;
+  padding: 10px 12px 8px !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+.composer .form, .composer .block, .stage .form, .stage .block,
+.rail .form, .rail .block {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.rail > * {
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 2px 8px 12px;
+  border-bottom: 1px solid #24242a;
+  margin-bottom: 8px;
+}
+.brand-name, .brand-sub {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.brand-glyph {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #ffe14a;
+  color: #111;
+  font-weight: 800;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+  letter-spacing: -0.05em;
+  flex: 0 0 auto;
+}
+.brand-name {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.04em;
+  color: #fafafa;
+  line-height: 1.1;
+}
+.brand-sub { font-size: 12px; color: #a1a1aa; margin-top: 2px; }
+.rail-foot {
+  margin-top: auto;
+  color: #71717a !important;
+  font-size: 12px !important;
+  padding: 8px 8px 0 !important;
+}
+.hf-nav { margin: 0 !important; padding: 0 !important; background: transparent !important; }
 .hf-nav > .form, .hf-nav > .block, .hf-nav fieldset {
   border: none !important;
   background: transparent !important;
@@ -135,32 +274,27 @@ CSS = """
   padding: 0 !important;
   margin: 0 !important;
 }
-.hf-nav .wrap {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 4px 18px !important;
-  overflow: hidden;
+.rail-nav .wrap {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-items: stretch !important;
+  gap: 4px !important;
 }
 .hf-nav label {
-  display: inline-flex !important;
+  display: flex !important;
   align-items: center;
   border: none !important;
-  border-bottom: 2px solid transparent !important;
-  border-radius: 0 !important;
-  padding: 12px 2px 10px !important;
+  border-radius: 12px !important;
+  padding: clamp(6px, 0.8vh, 10px) clamp(8px, 0.6vw, 12px) !important;
   background: transparent !important;
   box-shadow: none !important;
   cursor: pointer;
-  font-size: 15px !important;
-  font-weight: 500 !important;
-  color: #4b5563 !important;
-  white-space: nowrap;
+  font-size: clamp(12px, 0.9vw, 14px) !important;
+  font-weight: 550 !important;
+  color: #a1a1aa !important;
+  white-space: normal !important;
 }
-.hf-nav label:hover {
-  color: #0b0f19 !important;
-}
+.hf-nav label:hover { color: #fafafa !important; background: #1a1a1f !important; }
 .hf-nav input {
   appearance: none !important;
   -webkit-appearance: none !important;
@@ -173,51 +307,91 @@ CSS = """
   opacity: 0 !important;
 }
 .hf-nav label:has(input:checked) {
-  background: transparent !important;
-  color: #0b0f19 !important;
+  background: #232228 !important;
+  color: #fafafa !important;
   font-weight: 700 !important;
-  border-bottom-color: #ffd21e !important;
+  box-shadow: inset 3px 0 0 #ffe14a !important;
 }
-.source-nav { margin: 2px 0 8px !important; }
-.page-kicker {
-  color: #6b7280 !important;
-  font-size: 0.95rem !important;
-  margin: 0 0 14px !important;
+.source-nav { margin: 0 0 6px !important; height: auto !important; min-height: 36px !important; overflow: visible !important; }
+.source-nav .wrap {
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin-bottom: 4px !important;
 }
-.model-bar, .workspace, .local-panel {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 4px 8px 8px;
-  margin-bottom: 12px;
+.source-nav label {
+  border-radius: 999px !important;
+  padding: 6px 14px !important;
+  background: #101012 !important;
+  border: 1px solid #2c2c34 !important;
+  font-size: 13px !important;
 }
-.model-bar .form, .model-bar .block {
-  background: transparent !important;
+.source-nav label:has(input:checked) {
+  background: #ffe14a !important;
+  color: #111 !important;
   box-shadow: none !important;
+  border-color: #ffe14a !important;
 }
-.toolbar-actions button, .run-actions button { white-space: nowrap; }
-.hint { font-size: 13px !important; color: #6b7280 !important; background: transparent !important; }
-body[data-app-theme="dark"] .hf-bar {
-  background: #0b0f19;
-  border-bottom-color: #1f2937;
+.stage-title {
+  color: #fafafa !important;
+  font-size: 1.35rem !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.04em;
+  margin: 0 !important;
 }
-body[data-app-theme="dark"] .hf-brand h1 { color: #f9fafb !important; }
-body[data-app-theme="dark"] .hf-nav label { color: #9ca3af !important; }
-body[data-app-theme="dark"] .hf-nav label:hover,
-body[data-app-theme="dark"] .hf-nav label:has(input:checked) { color: #f9fafb !important; }
-body[data-app-theme="dark"] .model-bar,
-body[data-app-theme="dark"] .workspace,
-body[data-app-theme="dark"] .local-panel {
-  background: #111827;
-  border-color: #1f2937;
+.stage-title p, .stage-kicker {
+  color: #a1a1aa !important;
+  font-size: 0.92rem !important;
+  font-weight: 450 !important;
+  margin: 2px 0 8px !important;
 }
-body[data-app-theme="dark"] .page-kicker,
-body[data-app-theme="dark"] .hint { color: #9ca3af; }
+.workspace {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.composer-actions {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.composer-actions > * {
+  flex: 1 1 8rem !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.composer-actions button { white-space: normal !important; border-radius: 999px !important; min-width: 0 !important; }
+.composer-actions button.primary {
+  background: #ffe14a !important;
+  color: #111111 !important;
+  border: none !important;
+  font-weight: 750 !important;
+}
+.composer-actions button.primary:hover { background: #ffd21e !important; }
+.composer-actions button.stop {
+  border-radius: 999px !important;
+}
+.hint { font-size: 13px !important; color: #a1a1aa !important; background: transparent !important; }
+.composer textarea, .composer input, .stage textarea, .stage input {
+  border-radius: 12px !important;
+}
+.stage .block > label span,
+.composer .block > label span {
+  background: transparent !important;
+  color: #d4d4d8 !important;
+  border: none !important;
+  padding: 0 !important;
+  font-weight: 600 !important;
+}
 .snippet-code {
-  height: 52vh !important;
-  max-height: 52vh !important;
-  min-height: 420px !important;
+  height: clamp(7rem, 28dvh, 34rem) !important;
+  max-height: 32dvh !important;
+  min-height: 0 !important;
   overflow: hidden !important;
+  border: 1px solid #2c2c34 !important;
+  border-radius: 16px !important;
 }
 .snippet-code .cm-editor,
 .snippet-code .cm-scroller,
@@ -225,9 +399,14 @@ body[data-app-theme="dark"] .hint { color: #9ca3af; }
 .snippet-code .ace_editor,
 .snippet-code textarea,
 .snippet-code pre {
-  height: 52vh !important;
-  max-height: 52vh !important;
-  min-height: 420px !important;
+  height: clamp(7rem, 28dvh, 34rem) !important;
+  max-height: 32dvh !important;
+  min-height: 0 !important;
+}
+.output-card textarea {
+  height: clamp(3rem, 12dvh, 8rem) !important;
+  min-height: 0 !important;
+  max-height: 14dvh !important;
 }
 .snippet-code .cm-scroller,
 .snippet-code .monaco-scrollable-element,
@@ -237,35 +416,35 @@ body[data-app-theme="dark"] .hint { color: #9ca3af; }
 }
 .aa-dash { font-size: 14px; color: inherit; }
 .aa-dash h3, .aa-dash p, .aa-dash li { color: inherit; }
-.aa-dash a { color: #1d4ed8; }
-.aa-err { color: #b91c1c; }
+.aa-dash a { color: #93c5fd; }
+.aa-err { color: #fca5a5; }
 .aa-cards { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 16px; }
 .aa-card {
-  background: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 10px 12px;
+  background: #1c1c22;
+  color: #f4f4f5;
+  border: 1px solid #2c2c34;
+  border-radius: 14px;
+  padding: 12px 14px;
   min-width: 180px;
   flex: 1;
 }
-.aa-rank { font-size: 12px; color: #475569; }
-.aa-name { font-weight: 700; margin: 4px 0; color: #0f172a; }
-.aa-meta { font-size: 12px; color: #334155; }
+.aa-rank { font-size: 12px; color: #a1a1aa; }
+.aa-name { font-weight: 700; margin: 4px 0; color: #fafafa; }
+.aa-meta { font-size: 12px; color: #d4d4d8; }
 .aa-kpis { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; font-size: 12px; }
 .aa-kpis span {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: #27272a;
+  color: #f4f4f5;
   padding: 2px 6px;
   border-radius: 6px;
 }
-.aa-table-wrap { overflow: auto; max-height: 420px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
-.aa-table { width: 100%; border-collapse: collapse; font-size: 13px; color: #0f172a; }
-.aa-table th { position: sticky; top: 0; background: #334155; color: #fff; text-align: left; padding: 8px; }
-.aa-table td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
-.aa-table tr:nth-child(even) { background: #f8fafc; }
-.aa-table tr:nth-child(odd) { background: #fff; }
-.aa-note { font-size: 12px; color: #475569; }
+.aa-table-wrap { overflow: auto; max-height: 420px; border: 1px solid #2c2c34; border-radius: 12px; background: #101012; }
+.aa-table { width: 100%; border-collapse: collapse; font-size: 13px; color: #e4e4e7; }
+.aa-table th { position: sticky; top: 0; background: #18181b; color: #fafafa; text-align: left; padding: 8px; }
+.aa-table td { padding: 6px 8px; border-bottom: 1px solid #27272a; color: #e4e4e7; }
+.aa-table tr:nth-child(even) { background: #16161a; }
+.aa-table tr:nth-child(odd) { background: #101012; }
+.aa-note { font-size: 12px; color: #a1a1aa; }
 
 body[data-app-theme="dark"] .aa-dash a { color: #93c5fd; }
 body[data-app-theme="dark"] .aa-err { color: #fca5a5; }
@@ -314,28 +493,95 @@ body[data-app-theme="dark"] .aa-note { color: #94a3b8; }
   width: 0%;
 }
 .local-pct { margin-top: 8px; font-size: 13px; color: #cbd5e1; }
-.local-idle { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
+.local-idle { background: #1c1c22; color: #d4d4d8; border-color: #3f3f46; }
 .local-ready {
-  background: #ecfdf5;
-  color: #065f46;
-  border-color: #6ee7b7;
+  background: #052e16;
+  color: #d1fae5;
+  border-color: #166534;
 }
-.local-ready code { background: #d1fae5; padding: 1px 6px; border-radius: 4px; }
+.local-ready code { background: #14532d; padding: 1px 6px; border-radius: 4px; }
 .local-err {
-  background: #fef2f2;
-  color: #991b1b;
-  border-color: #fecaca;
+  background: #450a0a;
+  color: #fecaca;
+  border-color: #991b1b;
 }
 .local-stopped {
-  background: #fffbeb;
-  color: #92400e;
-  border-color: #fcd34d;
+  background: #451a03;
+  color: #fde68a;
+  border-color: #b45309;
 }
-body[data-app-theme="dark"] .local-idle { background: #1e293b; color: #cbd5e1; border-color: #475569; }
-body[data-app-theme="dark"] .local-ready { background: #064e3b; color: #d1fae5; border-color: #10b981; }
-body[data-app-theme="dark"] .local-ready code { background: #065f46; }
-body[data-app-theme="dark"] .local-err { background: #7f1d1d; color: #fecaca; border-color: #f87171; }
-body[data-app-theme="dark"] .local-stopped { background: #78350f; color: #fde68a; border-color: #fbbf24; }
+body[data-app-theme="light"] .local-idle { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
+body[data-app-theme="light"] .local-ready { background: #ecfdf5; color: #065f46; border-color: #6ee7b7; }
+body[data-app-theme="light"] .local-ready code { background: #d1fae5; }
+body[data-app-theme="light"] .local-err { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+body[data-app-theme="light"] .local-stopped { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
+
+body[data-app-theme="light"] .gradio-container,
+body[data-app-theme="light"] .studio,
+body[data-app-theme="light"] .main { background: #f4f4f5 !important; color: #18181b; }
+body[data-app-theme="light"] .rail {
+  background: #ffffff !important;
+  border-right-color: #e4e4e7 !important;
+}
+body[data-app-theme="light"] .brand-mark { border-bottom-color: #e4e4e7; }
+body[data-app-theme="light"] .brand-name { color: #18181b; }
+body[data-app-theme="light"] .brand-sub,
+body[data-app-theme="light"] .rail-foot,
+body[data-app-theme="light"] .stage-kicker,
+body[data-app-theme="light"] .hint { color: #52525b !important; }
+body[data-app-theme="light"] .stage-title { color: #18181b !important; }
+body[data-app-theme="light"] .hf-nav label { color: #3f3f46 !important; }
+body[data-app-theme="light"] .hf-nav label:hover { color: #18181b !important; background: #f4f4f5 !important; }
+body[data-app-theme="light"] .hf-nav label:has(input:checked) {
+  background: #f4f4f5 !important;
+  color: #18181b !important;
+}
+body[data-app-theme="light"] .source-nav label {
+  background: #fff !important;
+  border-color: #e4e4e7 !important;
+  color: #3f3f46 !important;
+}
+body[data-app-theme="light"] .source-nav label:has(input:checked) {
+  background: #ffe14a !important;
+  color: #111 !important;
+}
+body[data-app-theme="light"] .composer {
+  background: #ffffff !important;
+  border-color: #e4e4e7 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+body[data-app-theme="light"] .aa-dash a { color: #1d4ed8; }
+body[data-app-theme="light"] .aa-card {
+  background: #f4f4f5;
+  color: #18181b;
+  border-color: #e4e4e7;
+}
+body[data-app-theme="light"] .aa-name { color: #18181b; }
+body[data-app-theme="light"] .aa-table-wrap { background: #fff; border-color: #e4e4e7; }
+body[data-app-theme="light"] .aa-table { color: #18181b; }
+body[data-app-theme="light"] .aa-table td { color: #18181b; border-bottom-color: #e4e4e7; }
+body[data-app-theme="light"] .aa-table tr:nth-child(odd) { background: #fff; }
+body[data-app-theme="light"] .aa-table tr:nth-child(even) { background: #fafafa; }
+
+@media (max-width: 860px) {
+  .studio {
+    flex-direction: column !important;
+  }
+  .rail {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #24242a !important;
+  }
+  .rail-nav .wrap {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+  }
+}
 """
 
 THEME_JS = """
@@ -348,6 +594,24 @@ THEME_JS = """
     el.classList.toggle("dark", dark);
   });
 }
+"""
+
+LOAD_JS = """
+() => {
+  document.body.setAttribute("data-app-theme", "dark");
+  document.documentElement.classList.add("dark");
+  document.body.classList.add("dark");
+}
+"""
+
+BRAND_HTML = """
+<div class="brand-mark">
+  <div class="brand-glyph">C++</div>
+  <div>
+    <div class="brand-name">CppLift</div>
+    <div class="brand-sub">Every model. One bar.</div>
+  </div>
+</div>
 """
 
 PROGRAM_TIMER_RE = re.compile(r"Execution Time:\s*([0-9]*\.?[0-9]+)", re.IGNORECASE)
@@ -611,6 +875,8 @@ def show_section(name: str):
     return (
         gr.update(visible=need_model),
         gr.update(visible=name == "Snippet"),
+        gr.update(visible=name == "Snippet"),
+        gr.update(visible=name == "Repo"),
         gr.update(visible=name == "Repo"),
         gr.update(visible=name == "System"),
         gr.update(visible=name == "Scores"),
@@ -1080,60 +1346,163 @@ def build_ui():
     first_provider = providers[0]
     first_models, _ = keep_working_models(PROVIDERS[first_provider]["models"])
 
-    with gr.Blocks(title="CppLift", css=CSS, theme=THEME, fill_width=True) as ui:
-        with gr.Row(elem_classes=["hf-bar"], equal_height=True):
-            gr.Markdown("# CppLift", elem_classes=["hf-brand"])
-            section = gr.Radio(
-                ["Snippet", "Repo", "System", "Scores", "Suggest"],
-                value="Snippet",
-                show_label=False,
-                container=False,
-                elem_classes=["hf-nav"],
-                scale=4,
-            )
-            theme_toggle = gr.Dropdown(
-                ["Light", "Dark"],
-                value="Light",
-                show_label=False,
-                container=False,
-                scale=0,
-                min_width=96,
-            )
-        gr.Markdown(
-            "Convert Python to C++, compile on this machine, and compare runtimes.",
-            elem_classes=["page-kicker"],
-        )
+    with gr.Blocks(title="CppLift", css=CSS, theme=THEME, fill_width=True, js=LOAD_JS) as ui:
+        with gr.Row(elem_classes=["studio"]):
+            with gr.Column(elem_classes=["rail"], scale=0, min_width=120):
+                gr.HTML(BRAND_HTML)
+                section = gr.Radio(
+                    ["Snippet", "Repo", "System", "Scores", "Suggest"],
+                    value="Snippet",
+                    show_label=False,
+                    container=False,
+                    elem_classes=["hf-nav", "rail-nav"],
+                )
+                theme_toggle = gr.Dropdown(
+                    ["Light", "Dark"],
+                    value="Dark",
+                    label="Appearance",
+                    container=True,
+                )
+                gr.Markdown(
+                    "Python in. C++ out. Pick a model in the bar and generate.",
+                    elem_classes=["rail-foot"],
+                )
 
-        with gr.Group(visible=True, elem_classes=["model-bar"]) as model_bar:
-            with gr.Row():
-                provider = gr.Dropdown(providers, value=first_provider, label="Provider", scale=2)
-                model = gr.Dropdown(first_models, value=first_models[0], label="Model", scale=3)
-                api_key = gr.Textbox(
-                    label="API key",
-                    type="password",
-                    placeholder=key_placeholder(first_provider),
-                    scale=3,
-                )
-            token_bar = gr.Markdown(token_bar_markdown(first_models[0]))
-            source_tab = gr.Radio(
-                ["Cloud", "Local"],
-                value="Cloud",
-                show_label=False,
-                elem_classes=["hf-nav", "source-nav"],
-            )
-            with gr.Group(visible=True) as cloud_panel:
-                fetch_models_btn = gr.Button("Refresh catalog", scale=0, min_width=140)
-                fetch_models_log = gr.Markdown(elem_classes=["hint"])
-            with gr.Group(visible=False, elem_classes=["local-panel"]) as local_panel:
-                local_html = gr.HTML()
-                local_select = gr.Radio(
-                    label="Suggested local models",
-                    choices=[],
-                    value=None,
-                )
-                with gr.Row():
-                    pull_local_btn = gr.Button("Download & use", variant="primary")
-                    stop_pull_btn = gr.Button("Stop download & clean", variant="stop")
+            with gr.Column(elem_classes=["main"]):
+                with gr.Column(elem_classes=["stage"]):
+                    with gr.Group(visible=True, elem_classes=["workspace"]) as snippet_panel:
+                        gr.Markdown(
+                            "### Snippet\nPaste Python, generate C++, then compile on this machine.",
+                            elem_classes=["stage-title"],
+                        )
+                        with gr.Row(equal_height=True):
+                            python_box = gr.Code(
+                                value=SAMPLE_PYTHON,
+                                language="python",
+                                label="Python",
+                                lines=18,
+                                elem_classes=["snippet-code"],
+                            )
+                            cpp_box = gr.Code(
+                                language="cpp",
+                                label="C++",
+                                lines=18,
+                                elem_classes=["snippet-code"],
+                            )
+                        with gr.Row():
+                            py_out = gr.Textbox(label="Python output", lines=6, elem_classes=["output-card"])
+                            cpp_out = gr.Textbox(label="C++ compile / run log", lines=6, elem_classes=["output-card"])
+                        compare_md = gr.Markdown(
+                            "Timing, tokens, latency, and estimated $ appear here after convert, compile, or compare.",
+                            elem_classes=["stage-kicker"],
+                        )
+                        convert_status = gr.Markdown(
+                            "Convert a snippet to generate C++.",
+                            elem_classes=["stage-kicker"],
+                        )
+
+                    with gr.Group(visible=False, elem_classes=["workspace"]) as repo_panel:
+                        gr.Markdown(
+                            "### Repo\nPoint at a small Python project. CppLift writes C++ under `generated/cpp_project`.",
+                            elem_classes=["stage-title"],
+                        )
+                        with gr.Row():
+                            repo_path = gr.Textbox(
+                                label="Local folder path",
+                                placeholder="/path/to/my_python_project",
+                                scale=3,
+                            )
+                            repo_zip = gr.File(label="Or upload a .zip", file_types=[".zip"], type="filepath", scale=2)
+                        with gr.Row():
+                            repo_preview = gr.Textbox(label="Generated C++ preview", lines=16, scale=3)
+                            with gr.Column(scale=2):
+                                repo_dir = gr.Textbox(label="Output folder")
+                                repo_log = gr.Textbox(label="Status / build log", lines=12)
+
+                    with gr.Group(visible=False, elem_classes=["workspace"]) as system_panel:
+                        gr.Markdown(
+                            "### System\nToolchain detected on this machine. Edit flags if you need a different compile.",
+                            elem_classes=["stage-title"],
+                        )
+                        sys_box = gr.Textbox(value=report, label="System report", lines=16)
+                        with gr.Row():
+                            compile_box = gr.Textbox(value=default_compile, label="Snippet compile command")
+                            run_box = gr.Textbox(value=default_run, label="Snippet run command")
+                        refresh_btn = gr.Button("Re-scan this machine")
+
+                    with gr.Group(visible=False, elem_classes=["workspace"]) as aa_panel:
+                        gr.Markdown(
+                            "### Scores\nIndependent scores from [Artificial Analysis](https://artificialanalysis.ai/leaderboards/models). "
+                            "Nothing is downloaded until you load the leaderboard.",
+                            elem_classes=["stage-title"],
+                        )
+                        with gr.Row():
+                            aa_key_box = gr.Textbox(
+                                label="Artificial Analysis API key",
+                                type="password",
+                                placeholder="Paste x-api-key, or leave blank if already in .env",
+                                scale=3,
+                            )
+                            load_aa_btn = gr.Button("Load leaderboard", variant="primary", scale=1)
+                        aa_html = gr.HTML(value=aa_dashboard_html())
+
+                    with gr.Group(visible=False, elem_classes=["workspace"]) as suggest_panel:
+                        gr.Markdown(
+                            "### Suggest\nPick a job. Uses Artificial Analysis ranks when loaded; otherwise built-in picks.",
+                            elem_classes=["stage-title"],
+                        )
+                        with gr.Row():
+                            suggest_cat = gr.Dropdown(
+                                SUGGESTION_CATEGORIES,
+                                value=SUGGESTION_CATEGORIES[0],
+                                label="Category",
+                                scale=3,
+                            )
+                            suggest_btn = gr.Button("Get suggestions", variant="primary", scale=1)
+                        suggest_html = gr.HTML(value=suggestions_html(SUGGESTION_CATEGORIES[0]))
+
+                with gr.Group(visible=True, elem_classes=["composer"]) as model_bar:
+                    source_tab = gr.Radio(
+                        ["Cloud", "Local"],
+                        value="Cloud",
+                        show_label=False,
+                        elem_classes=["hf-nav", "source-nav"],
+                    )
+                    with gr.Row():
+                        provider = gr.Dropdown(providers, value=first_provider, label="Provider", scale=2)
+                        model = gr.Dropdown(first_models, value=first_models[0], label="Model", scale=3)
+                        api_key = gr.Textbox(
+                            label="API key",
+                            type="password",
+                            placeholder=key_placeholder(first_provider),
+                            scale=3,
+                        )
+                    token_bar = gr.Markdown(token_bar_markdown(first_models[0]), elem_classes=["hint"])
+                    with gr.Group(visible=True) as cloud_panel:
+                        fetch_models_btn = gr.Button("Refresh catalog", scale=0, min_width=0)
+                        fetch_models_log = gr.Markdown(elem_classes=["hint"])
+                    with gr.Group(visible=False, elem_classes=["local-panel"]) as local_panel:
+                        local_html = gr.HTML()
+                        local_select = gr.Radio(
+                            label="Suggested local models",
+                            choices=[],
+                            value=None,
+                        )
+                        with gr.Row(elem_classes=["composer-actions"]):
+                            pull_local_btn = gr.Button("Download & use", variant="primary")
+                            stop_pull_btn = gr.Button("Stop download & clean", variant="stop")
+                    with gr.Row(visible=True, elem_classes=["composer-actions"]) as snippet_actions:
+                        convert_btn = gr.Button("Convert to C++", variant="primary", scale=1, min_width=0)
+                        run_py_btn = gr.Button("Run Python", scale=1, min_width=0)
+                        run_cpp_btn = gr.Button("Compile & run", scale=1, min_width=0)
+                        compare_btn = gr.Button("Compare both", scale=1, min_width=0)
+                        stop_run_btn = gr.Button("Stop", variant="stop", scale=1, min_width=0)
+                        repeats = gr.Slider(1, 5, value=3, step=1, label="C++ repeats", scale=2, min_width=0)
+                    with gr.Row(visible=False, elem_classes=["composer-actions"]) as repo_actions:
+                        convert_repo_btn = gr.Button("Convert repo to C++", variant="primary", scale=1, min_width=0)
+                        build_repo_btn = gr.Button("Build & run", scale=1, min_width=0)
+                        stop_repo_btn = gr.Button("Stop run", variant="stop", scale=1, min_width=0)
+                        repo_repeats = gr.Slider(1, 5, value=3, step=1, label="C++ repeats", scale=2, min_width=0)
 
         fetch_models_btn.click(
             refresh_live_models,
@@ -1181,106 +1550,32 @@ def build_ui():
         )
         model.change(token_info_for, inputs=model, outputs=token_bar)
         aa_state = gr.State([])
-
-        with gr.Group(visible=True, elem_classes=["workspace"]) as snippet_panel:
-            with gr.Row(equal_height=True):
-                python_box = gr.Code(
-                    value=SAMPLE_PYTHON,
-                    language="python",
-                    label="Python",
-                    lines=22,
-                    elem_classes=["snippet-code"],
-                )
-                cpp_box = gr.Code(
-                    language="cpp",
-                    label="C++",
-                    lines=22,
-                    elem_classes=["snippet-code"],
-                )
-            with gr.Row(elem_classes=["run-actions"]):
-                convert_btn = gr.Button("Convert to C++", variant="primary", scale=0, min_width=140)
-                run_py_btn = gr.Button("Run Python", scale=0, min_width=120)
-                run_cpp_btn = gr.Button("Compile & run", scale=0, min_width=130)
-                compare_btn = gr.Button("Compare both", scale=0, min_width=130)
-                stop_run_btn = gr.Button("Stop", variant="stop", scale=0, min_width=90)
-                repeats = gr.Slider(1, 5, value=3, step=1, label="C++ repeats", scale=1, min_width=180)
-            with gr.Row():
-                py_out = gr.Textbox(label="Python output", lines=8)
-                cpp_out = gr.Textbox(label="C++ compile / run log", lines=8)
-            compare_md = gr.Markdown("Timing, tokens, latency, and estimated $ appear here after convert, compile, or compare.")
-            convert_status = gr.Markdown("Convert a snippet to generate C++.")
-
-        with gr.Group(visible=False, elem_classes=["workspace"]) as repo_panel:
-            gr.Markdown("Point at a small Python project. CppLift writes C++ under `generated/cpp_project`.")
-            with gr.Row():
-                repo_path = gr.Textbox(
-                    label="Local folder path",
-                    placeholder="/path/to/my_python_project",
-                    scale=3,
-                )
-                repo_zip = gr.File(label="Or upload a .zip", file_types=[".zip"], type="filepath", scale=2)
-            with gr.Row():
-                convert_repo_btn = gr.Button("Convert repo to C++", variant="primary")
-                build_repo_btn = gr.Button("Build & run")
-                stop_repo_btn = gr.Button("Stop run", variant="stop")
-                repo_repeats = gr.Slider(1, 5, value=3, step=1, label="C++ repeats")
-            with gr.Row():
-                repo_preview = gr.Textbox(label="Generated C++ preview", lines=16, scale=3)
-                with gr.Column(scale=2):
-                    repo_dir = gr.Textbox(label="Output folder")
-                    repo_log = gr.Textbox(label="Status / build log", lines=12)
-
-        with gr.Group(visible=False, elem_classes=["workspace"]) as system_panel:
-            gr.Markdown("Toolchain detected on this machine. Edit flags if you need a different compile.")
-            sys_box = gr.Textbox(value=report, label="System report", lines=16)
-            with gr.Row():
-                compile_box = gr.Textbox(value=default_compile, label="Snippet compile command")
-                run_box = gr.Textbox(value=default_run, label="Snippet run command")
-            refresh_btn = gr.Button("Re-scan this machine")
-            refresh_btn.click(refresh_system, outputs=[sys_box, compile_box, run_box])
-
-        with gr.Group(visible=False, elem_classes=["workspace"]) as aa_panel:
-            gr.Markdown(
-                "Independent scores from [Artificial Analysis](https://artificialanalysis.ai/leaderboards/models). "
-                "Nothing is downloaded until you load the leaderboard."
-            )
-            with gr.Row():
-                aa_key_box = gr.Textbox(
-                    label="Artificial Analysis API key",
-                    type="password",
-                    placeholder="Paste x-api-key, or leave blank if already in .env",
-                    scale=3,
-                )
-                load_aa_btn = gr.Button("Load leaderboard", variant="primary", scale=1)
-            aa_html = gr.HTML(value=aa_dashboard_html())
-            load_aa_btn.click(load_aa_dashboard, inputs=aa_key_box, outputs=[aa_html, aa_state])
-
-        with gr.Group(visible=False, elem_classes=["workspace"]) as suggest_panel:
-            gr.Markdown("Pick a job. Uses Artificial Analysis ranks when loaded; otherwise built-in picks.")
-            with gr.Row():
-                suggest_cat = gr.Dropdown(
-                    SUGGESTION_CATEGORIES,
-                    value=SUGGESTION_CATEGORIES[0],
-                    label="Category",
-                    scale=3,
-                )
-                suggest_btn = gr.Button("Get suggestions", variant="primary", scale=1)
-            suggest_html = gr.HTML(value=suggestions_html(SUGGESTION_CATEGORIES[0]))
-            suggest_btn.click(
-                load_suggestions,
-                inputs=[suggest_cat, aa_key_box, aa_state],
-                outputs=[suggest_html, aa_state],
-            )
-            suggest_cat.change(
-                show_cached_suggestions,
-                inputs=[suggest_cat, aa_state],
-                outputs=suggest_html,
-            )
+        refresh_btn.click(refresh_system, outputs=[sys_box, compile_box, run_box])
+        load_aa_btn.click(load_aa_dashboard, inputs=aa_key_box, outputs=[aa_html, aa_state])
+        suggest_btn.click(
+            load_suggestions,
+            inputs=[suggest_cat, aa_key_box, aa_state],
+            outputs=[suggest_html, aa_state],
+        )
+        suggest_cat.change(
+            show_cached_suggestions,
+            inputs=[suggest_cat, aa_state],
+            outputs=suggest_html,
+        )
 
         section.change(
             show_section,
             inputs=section,
-            outputs=[model_bar, snippet_panel, repo_panel, system_panel, aa_panel, suggest_panel],
+            outputs=[
+                model_bar,
+                snippet_panel,
+                snippet_actions,
+                repo_panel,
+                repo_actions,
+                system_panel,
+                aa_panel,
+                suggest_panel,
+            ],
         )
 
         convert_evt = convert_btn.click(

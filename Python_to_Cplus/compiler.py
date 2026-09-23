@@ -87,7 +87,10 @@ def snippet_run_command(exe: str | None = None) -> list[str]:
     if exe is None:
         exe = "main.exe" if detected["os"] == "Windows" else "main"
     if detected["os"] == "Windows":
-        return [str(exe)]
+        exe_str = str(exe)
+        if not exe_str.startswith((".", "/", "\\")):
+            return [f".\\{exe_str}"]
+        return [exe_str]
     return [f"./{exe}" if not str(exe).startswith(("/", "./")) else str(exe)]
 
 
