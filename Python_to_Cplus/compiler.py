@@ -151,6 +151,113 @@ def project_build_commands(project_dir: str | Path) -> dict:
     }
 
 
+_LANG_TOOLS = {
+    "c": ("clang", "gcc", "cc"),
+    "c++": ("clang++", "g++", "c++"),
+    "rust": ("rustc",),
+    "go": ("go",),
+    "java": ("javac",),
+    "python": ("python3", "python"),
+    "javascript": ("node",),
+    "typescript": ("node",),
+}
+
+
+def toolchain_for(language: str) -> dict:
+    """Compiler or runtime for an output language, plus an install hint if missing."""
+    lang = (language or "C++").strip().lower()
+    sysname = platform.system()
+    if lang in ("c++", "cpp"):
+        detected = detect_compiler()
+        found = bool(_which("clang++", "g++", "c++", "cl"))
+        compile_cmd = snippet_compile_command()
+        run_cmd = snippet_run_command()
+        hint = ""
+        if not found:
+            hint = _lang_missing_hint(sysname, "C++")
+        return {
+            "found": found,
+            "compile": format_command(compile_cmd),
+            "run": format_command(run_cmd),
+            "hint": hint,
+            "needs_compile": True,
+        }
+    if lang == "c":
+        cc = _which("clang", "gcc", "cc")
+        exe = "main.exe" if sysname == "Windows" else "main"
+        compile_cmd = f"{cc or 'clang'} -O3 -o {exe} main.c"
+        return {
+            "found": bool(cc),
+            "compile": compile_cmd,
+            "run": f".\\{exe}" if sysname == "Windows" else f"./{exe}",
+            "hint": "" if cc else _lang_missing_hint(sysname, "C"),
+            "needs_compile": True,
+        }
+    if lang == "rust":
+        rustc = _which("rustc")
+        exe = "main.exe" if sysname == "Windows" else "main"
+        return {
+            "found": bool(rustc),
+            "compile": f"{rustc or 'rustc'} main.rs -O -o {exe}",
+            "run": f".\\{exe}" if sysname == "Windows" else f"./{exe}",
+            "hint": "" if rustc else "Install Rust: https://rustup.rs" + _container_note(),
+            "needs_compile": True,
+        }
+    if lang == "go":
+        go = _which("go")
+        exe = "main.exe" if sysname == "Windows" else "main"
+        return {
+            "found": bool(go),
+            "compile": f"{go or 'go'} build -o {exe} main.go",
+            "run": f".\\{exe}" if sysname == "Windows" else f"./{exe}",
+            "hint": "" if go else "Install Go: https://go.dev/dl/" + _container_note(),
+            "needs_compile": True,
+        }
+    if lang == "java":
+        javac = _which("javac")
+        java = _which("java")
+        return {
+            "found": bool(javac and java),
+            "compile": f"{javac or 'javac'} Main.java",
+            "run": f"{java or 'java'} Main",
+            "hint": "" if javac else "Install a JDK (Temurin or Oracle) and ensure javac is on PATH." + _container_note(),
+            "needs_compile": True,
+        }
+    if lang == "python":
+        py = _which("python3", "python") or "python3"
+        return {"found": bool(_which("python3", "python")), "compile": "", "run": f"{py} main.py", "hint": "", "needs_compile": False}
+    if lang in ("javascript", "typescript"):
+        node = _which("node")
+        return {
+            "found": bool(node),
+            "compile": "",
+            "run": f"{node or 'node'} main.js",
+            "hint": "" if node else "Install Node.js: https://nodejs.org" + _container_note(),
+            "needs_compile": False,
+        }
+    return {
+        "found": False,
+        "compile": "",
+        "run": "",
+        "hint": f"No built-in runner for {language}. Paste a compile and run command on System.",
+        "needs_compile": True,
+    }
+
+
+def _container_note() -> str:
+    if _which("docker"):
+        return " Docker is on PATH if you want a container build instead of a local install."
+    return ""
+
+
+def _lang_missing_hint(sysname: str, lang: str) -> str:
+    if sysname == "Darwin":
+        return f"No {lang} compiler. Run `xcode-select --install` or `brew install llvm`." + _container_note()
+    if sysname == "Windows":
+        return f"No {lang} compiler. Install Visual Studio Build Tools, LLVM, or MinGW-w64, then Re-scan." + _container_note()
+    return f"No {lang} compiler. Debian/Ubuntu: `sudo apt install build-essential`. Fedora: `sudo dnf install gcc-c++`." + _container_note()
+
+
 def format_command(cmd: list[str]) -> str:
     return " ".join(f'"{c}"' if " " in c else c for c in cmd)
 

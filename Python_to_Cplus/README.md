@@ -4,7 +4,7 @@
 
 The Gradio app lives in `Python_to_Cplus/`. Works on macOS, Linux, and Windows with Python 3.11+. A C++ compiler is only required if you click **Compile & run**.
 
-The window is a studio that stays inside the browser. The left rail is the section list. The center is the work area. The bottom bar is the model and the convert action. Zooming the browser rescales that layout; panels scroll inside themselves when the window is short.
+The window is a studio that stays inside the browser. The left rail is the section list, in this order: **Models**, **Languages**, **Repo**, **Performance**, **System**. Zooming the browser reflows that layout: the rail wraps to the top on a tight window, editors stack, and each panel scrolls inside itself.
 
 ## What you need
 
@@ -68,7 +68,7 @@ Supported providers: **OpenAI**, **Anthropic**, **Google Gemini**, **xAI Grok**,
 
 You can also paste a key in the UI. The UI key overrides `.env` for that request and is not written to disk.
 
-For the **Scores** tab, set `ARTIFICIAL_ANALYSIS_API_KEY` (from [Artificial Analysis](https://artificialanalysis.ai)) or paste it there. That key is only used when you click **Load leaderboard**.
+For live ranks on **Models**, set `ARTIFICIAL_ANALYSIS_API_KEY` (from [Artificial Analysis](https://artificialanalysis.ai)) or paste it in **Scores key**. Ranking still works from built-in estimates when that key is absent.
 
 Ollama needs no cloud key.
 
@@ -88,18 +88,19 @@ Open the URL Gradio prints. The app uses the full browser window.
 
 | Area | What it is |
 | --- | --- |
-| Left rail | **Snippet**, **Repo**, **System**, **Scores**, **Suggest**. **Appearance** (Light / Dark) is under the list. |
-| Center | The page for the selected section. On **Snippet**, Python is above or beside the generated C++, depending on window width. Output and timing sit under the editors. |
-| Bottom bar | Shown only on **Snippet** and **Repo**. **Cloud / Local**, **Provider**, **Model**, **API key**, the token line, and the action buttons (**Convert to C++**, **Run Python**, **Compile & run**, **Compare both**, **Stop**, **C++ repeats**). On **Repo** the actions are **Convert repo to C++**, **Build & run**, and **Stop run**. |
+| Left rail | **Models**, **Languages**, **Repo**, **Performance**, **System**. **Appearance** (Light / Dark) is under the list. |
+| Models | Cloud or Local, rank factor (output tokens, cost per run, latency, accuracy, or balanced), top 5, a typed run count, and a small quality-vs-cost chart. Hover a dot for every metric. |
+| Languages | The same header as Repo (model and run count), then input language, output language, compiler commands when needed, and the two code panes. |
+| Repo | The same header as Languages, then the folder or zip form. |
+| Performance | A line per model. Hover a point for accuracy, latency, tokens, and cost, plus the KPI list. |
+| Bottom bar | Shown on **Languages** and **Repo**, with the run actions. |
 
-**Provider**, **Model**, and **API key** stay in sync when you move between **Snippet** and **Repo**. **System**, **Scores**, and **Suggest** hide the bottom bar.
+If you zoom in and the window is tight, the rail moves to the top as a wrapping list, the editors stack, and the action buttons wrap. Scroll inside the center or the bottom bar to reach anything that does not fit.
 
-If you zoom in and the window is tight, the rail stays a vertical list, the editors stack, and the action buttons wrap. Scroll inside the center or the bottom bar to reach anything that does not fit.
+### 1. Pick a model
 
-### 1. Pick a model (Snippet or Repo)
-
-1. Stay on **Snippet** or **Repo** so the bottom bar is visible.
-2. Choose **Cloud** or **Local** at the top of that bar.
+1. Open **Models**.
+2. Choose **Cloud** or **Local**.
 
 **Cloud**
 
@@ -107,33 +108,39 @@ If you zoom in and the window is tight, the rail stays a vertical list, the edit
 2. Set **Model**. If the list looks stale, click **Refresh catalog** (does not run at startup). Retired ids are dropped; the log says what is still working today.
 3. Leave **API key** empty if the matching variable is already in `.env`. Paste a key only to override for this session. UI keys are not saved to disk.
 
+3. Set **Rank by** (balanced, output tokens, cost per run, latency, or accuracy) and type **Runs** (1–10).
+4. Click **Show top 5**. The chart plots those five. Hover a dot for score, accuracy, latency, tokens, and cost.
+5. Leave every box checked and click **Use all**, or uncheck some and click **Use selected**. **Evaluate** runs only the checked models. Open **Performance** for the line chart.
+
 **Local**
 
-1. Click **Local**. CppLift probes Ollama, shows this machine’s RAM, and lists models already on disk.
-2. Pick a suggested model (or an installed one).
+1. Click **Local**. CppLift probes Ollama, shows this machine’s RAM, and lists models already on disk in **Model**.
+2. Pick a model in **Download this local model**.
 3. Click **Download & use**. Watch the progress panel. If you need to cancel, click **Stop download & clean** (that also deletes the incomplete pull).
-4. When it is ready, **Provider** is **Ollama (local)** and Convert needs no cloud key. If Ollama is missing, follow the install hint in the panel, then run `ollama serve`.
+4. When it is ready, **Model** lists the downloaded model and Convert needs no cloud key. If Ollama is missing, follow the install hint in the panel, then run `ollama serve`.
 
 The line under the dropdowns is the **token bar**: context-window size for the selected model. After a conversion it also shows prompt/completion tokens, latency, and estimated $ (local Ollama is $0).
 
-### 2. Convert a snippet
+### 2. Languages and code
 
-1. Open **Snippet**.
-2. Paste or edit Python on the left (a sample is already there).
-3. Click **Convert to C++**. Status shows **Converting…**, then **Done** with the token/cost line. Generated C++ appears on the right.
-4. Optional:
-   - **Run Python** — execute the left pane.
-   - **Compile & run** — compile `generated/main.cpp` with the **System** compile command, then run it. **C++ repeats** (1–5) times the C++ binary for a more stable wall-clock average.
-   - **Compare both** — run Python and C++, then show timing plus last-convert tokens / latency / $.
-   - **Stop** — cancel convert, Python, or C++ that is still running so you can edit and try again.
+1. Open **Languages**. The strip under the title is the model, the language pair, and the run count from **Models**.
+2. Set **Input language** and **Output language**.
+3. If the output needs a compiler (C, C++, Rust, Go, Java), edit **Compile command** and **Run command**. Python and JavaScript hide that block.
+4. Edit the input on the left (a Python sample is already there). Converted code appears on the right.
+5. In the bottom bar, set **Action** to **Convert** and click **Run**. Status shows **Converting…**, then **Done** with the token/cost line.
+6. Optional actions in the same dropdown:
+   - **Run input** — execute the left pane.
+   - **Compile & run** — compile with the command on this page, then run it.
+   - **Compare** — run Python and C++, then show timing plus last-convert tokens / latency / $.
+   - **Stop** — cancel convert, input, or output that is still running so you can edit and try again.
 
 If compile fails, CppLift sends the compiler log back to the same model (up to 4 repair passes), writes a successful fix into `generated/repair_memory.json`, and retries. Later compiles can reuse that memory.
 
 ### 3. Convert a small Python repo
 
-1. Open **Repo**.
+1. Open **Repo**. The header matches **Languages** (same model, languages, and run count).
 2. Enter a local folder path, or upload a `.zip`.
-3. Click **Convert repo to C++**. Output is `generated/cpp_project` (`CMakeLists.txt` + `src/`). Very large trees are truncated so the prompt fits the model context.
+3. Click **Convert repo**. Output is `generated/cpp_project` (`CMakeLists.txt` + `src/`). Very large trees are truncated so the prompt fits the model context.
 4. Click **Build & run** to configure/build (CMake when available, otherwise a direct compiler line) and run the binary. **Stop run** cancels that job.
 
 From a terminal, after a successful build:
@@ -158,36 +165,26 @@ Interactive programs (games, prompts) work best from this terminal, not from the
 
 1. Open **System**.
 2. Read OS, CPU, SIMD, and detected compilers.
-3. Edit **Snippet compile command** and **Snippet run command** if you want different flags (sanitizers, another compiler).
-4. After installing a toolchain, click **Re-scan this machine**.
+3. After installing a toolchain, click **Re-scan this machine**. Compile and run commands for the current output language are on **Languages**.
 
-### 5. Compare models (Scores)
+### 5. Read the KPIs (Performance)
 
-1. Open **Scores**.
-2. Optionally paste an Artificial Analysis `x-api-key`, or set `ARTIFICIAL_ANALYSIS_API_KEY` in `.env`.
-3. Click **Load leaderboard**. Nothing is downloaded until you do.
-4. Use the table (intelligence, coding, speed, price) to decide which convert model to pick back on **Snippet** / **Repo**.
-
-### 6. Get a recommendation (Suggest)
-
-1. Open **Suggest**.
-2. Choose a category: Coding / Python → C++, General intelligence, Math / reasoning, Speed, Low latency, Lowest cost, or Local (Ollama).
-3. Click **Get suggestions**. If you already loaded Scores, ranks come from Artificial Analysis; otherwise CppLift uses built-in defaults.
-4. Switch back to **Snippet** or **Repo** and select that provider/model.
+1. On **Models**, rank a top 5 and click **Evaluate**.
+2. Open **Performance**.
+3. The line chart is one line per model. Hover a point for accuracy, latency, tokens, and cost. Switch **Chart metric** or click **Export CSV**.
 
 ### Typical first run
 
 1. `python app.py` → open http://127.0.0.1:7860
-2. **Snippet** → **Cloud** → Provider + Model (or **Local** → **Download & use**)
-3. **Convert to C++** → wait for **Done**
-4. **Compare both**
-5. Or **Repo** → folder or zip → **Convert repo to C++** → **Build & run** / `./app`
+2. **Models** → **Cloud** or **Local** → **Show top 5** → **Use all** or **Use selected**
+3. **Languages** → input and output, then the editors → **Convert** → **Run**
+4. **Performance** after **Evaluate**, or **Repo** → folder or zip → **Convert repo** → **Build & run** / `./app`
 
 ## Layout
 
 | File | Role |
 | --- | --- |
-| `app.py` | Gradio studio UI (left rail, work area, bottom model bar, convert, compile) |
+| `app.py` | Gradio studio UI (left rail, models, languages and code, repo, performance) |
 | `compiler.py` | Detect toolchain and pick compile commands |
 | `converter.py` | Provider clients, Python → C++ prompts, usage stats |
 | `model_catalog.py` | Live model lists, Ollama probe/pull, Scores / Suggest |
@@ -197,9 +194,9 @@ Interactive programs (games, prompts) work best from this terminal, not from the
 
 ## Troubleshooting
 
-- **No API key** — set the matching variable in `.env` or paste it in the UI on Snippet/Repo.
-- **No compiler** — install one using the hints on **System**, then **Re-scan this machine**.
-- **Ollama connection error** — on **Snippet** or **Repo**, click **Local** in the bottom bar. If Ollama is not installed, follow the download hint. If it is installed, run `ollama serve`, pick a suggested model, then **Download & use**.
+- **No API key** — set the matching variable in `.env` or paste it on **Models**.
+- **No compiler** — install one using the hints on **Languages** or **System**, then **Re-scan this machine**.
+- **Ollama connection error** — on **Models**, click **Local**. If Ollama is not installed, follow the download hint. If it is installed, run `ollama serve`, pick a model, then **Download & use**.
 - **Windows `cl` not found** — open “x64 Native Tools Command Prompt for VS” (or equivalent) before `python app.py`, or use `clang++` / MinGW `g++` instead.
 - **Permission / venv issues** — delete `.venv` and recreate it with the commands above.
 

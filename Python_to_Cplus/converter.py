@@ -13,7 +13,7 @@ from datetime import date
 
 from openai import OpenAI
 
-from compiler import detect_compiler, project_build_commands, snippet_compile_command, snippet_run_command
+from compiler import detect_compiler, project_build_commands, snippet_compile_command, snippet_run_command, toolchain_for
 from research import lookup_repairs
 
 SKIP_DIRS = {
@@ -394,40 +394,40 @@ Return a full compilable translation unit. No markdown fences.
     return sanitize_cpp_source(strip_fences(content))
 
 
-def snippet_user_prompt(python_code: str) -> str:
-    compile_cmd = snippet_compile_command()
-    run_cmd = snippet_run_command()
-    detected = detect_compiler()
-    return f"""
-Port this Python code to C++ with the fastest implementation that produces identical output.
-
-System information:
-{json.dumps(detected["system_info"], indent=2, default=str)}
-
-Compiler family: {detected["family"]} on {detected["os"]}
-The C++ will be saved as main.cpp and compiled with:
-{compile_cmd}
-then run with:
-{run_cmd}
-
-Do not use <bits/stdc++.h>. Do not write `using namespace std;` (std::prev / std::next break Node::prev / Node::next).
-Use std:: prefixes and standard headers only.
-
-Respond only with C++ code.
-
-Python:
-```python
-{python_code}
-```
-"""
+def snippet_system(src_lang: str, dst_lang: str) -> str:
+    base = (
+        f"You convert {src_lang} into {dst_lang}. "
+        f"Reply with {dst_lang} source only. No markdown fences. "
+        "Write a complete program with the same behavior, as fast as possible."
+    )
+    if dst_lang == "C++":
+        return base + PORTABLE_INCLUDE_RULES
+    return base
 
 
-def convert_snippet(provider: str, model: str, api_key: str | None, python_code: str):
+def snippet_user_prompt(source: str, src_lang: str = "Python", dst_lang: str = "C++") -> str:
+    tool = toolchain_for(dst_lang)
+    return (
+        f"Port this {src_lang} to {dst_lang}.\n"
+        f"Compile: {tool.get('compile') or 'not required'}\n"
+        f"Run: {tool.get('run') or 'n/a'}\n\n"
+        f"{source}"
+    )
+
+
+def convert_snippet(
+    provider: str,
+    model: str,
+    api_key: str | None,
+    source: str,
+    src_lang: str = "Python",
+    dst_lang: str = "C++",
+):
     client = make_client(provider, api_key)
     model = canonical_model_id(model)
     messages = [
-        {"role": "system", "content": SNIPPET_SYSTEM},
-        {"role": "user", "content": snippet_user_prompt(python_code)},
+        {"role": "system", "content": snippet_system(src_lang, dst_lang)},
+        {"role": "user", "content": snippet_user_prompt(source, src_lang, dst_lang)},
     ]
     started = time.perf_counter()
     kwargs = {"model": model, "messages": messages, "stream": True, **_reasoning_kw(model)}
@@ -439,6 +439,7 @@ def convert_snippet(provider: str, model: str, api_key: str | None, python_code:
         stream = client.chat.completions.create(**kwargs)
     acc = ""
     usage = None
+    clean = sanitize_cpp_source if dst_lang == "C++" else strip_fences
     for chunk in stream:
         usage = getattr(chunk, "usage", None) or usage
         delta = ""
@@ -446,10 +447,10 @@ def convert_snippet(provider: str, model: str, api_key: str | None, python_code:
             delta = chunk.choices[0].delta.content or ""
         if delta:
             acc += delta
-            yield sanitize_cpp_source(strip_fences(acc))
-    _set_usage(model, usage, time.perf_counter() - started, len(python_code) // 4, len(acc) // 4)
+            yield clean(acc)
+    _set_usage(model, usage, time.perf_counter() - started, len(source) // 4, len(acc) // 4)
     if acc:
-        yield sanitize_cpp_source(strip_fences(acc))
+        yield clean(acc)
 
 
 def collect_python_tree(root: Path) -> tuple[str, list[str]]:

@@ -107,7 +107,7 @@ def fetch_aa_leaderboard(api_key: str | None = None) -> list[dict]:
     if not key:
         raise ValueError(
             "No Artificial Analysis key. Create one at https://artificialanalysis.ai "
-            "and set ARTIFICIAL_ANALYSIS_API_KEY, or paste it on the Artificial Analysis tab."
+            "and set ARTIFICIAL_ANALYSIS_API_KEY, or paste it in Scores key on Models."
         )
     last = ""
     verify = _ssl_verify()

@@ -22,6 +22,7 @@ from compiler import (
     snippet_compile_command,
     snippet_run_command,
     system_report,
+    toolchain_for,
 )
 from converter import (
     LAST_USAGE,
@@ -42,13 +43,23 @@ from research import (
     remember_repair,
     token_bar_markdown,
 )
+from bench import (
+    HIGHLIGHT,
+    LANGUAGES,
+    RANK_FACTORS,
+    SOURCE_FILE,
+    append_log,
+    chart_svg,
+    export_runs,
+    pareto_scatter,
+    pick_label,
+    rank_top5,
+    summarize,
+)
 from model_catalog import (
-    SUGGESTION_CATEGORIES,
     OLLAMA_PROVIDER,
-    aa_dashboard_html,
     abort_ollama_pull,
     apply_installed_ollama,
-    fetch_aa_leaderboard,
     fetch_all_provider_models,
     iter_ollama_pull,
     local_choice_labels,
@@ -56,7 +67,6 @@ from model_catalog import (
     model_is_installed,
     parse_local_choice,
     probe_ollama,
-    suggestions_html,
 )
 
 ROOT = Path(__file__).resolve().parent
@@ -201,6 +211,12 @@ footer, .built-with { display: none !important; }
   min-width: 0 !important;
   max-width: 100% !important;
 }
+.stage .tiny-actions > *,
+.composer .composer-actions > * {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+}
 .composer {
   flex: 0 1 auto !important;
   width: auto !important;
@@ -334,9 +350,9 @@ footer, .built-with { display: none !important; }
 }
 .stage-title {
   color: #fafafa !important;
-  font-size: 1.35rem !important;
-  font-weight: 750 !important;
-  letter-spacing: -0.04em;
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.03em;
   margin: 0 !important;
 }
 .stage-title p, .stage-kicker {
@@ -357,21 +373,47 @@ footer, .built-with { display: none !important; }
   width: 100% !important;
   min-width: 0 !important;
 }
-.composer-actions > * {
-  flex: 1 1 8rem !important;
+.composer-actions > *,
+.stage .tiny-actions > * {
+  flex: 0 0 auto !important;
+  width: auto !important;
   min-width: 0 !important;
   max-width: 100% !important;
 }
-.composer-actions button { white-space: normal !important; border-radius: 999px !important; min-width: 0 !important; }
-.composer-actions button.primary {
-  background: #ffe14a !important;
-  color: #111111 !important;
-  border: none !important;
-  font-weight: 750 !important;
+.stage .block,
+.stage .form,
+.stage .row,
+.models-panel,
+.work-page {
+  flex-shrink: 0 !important;
+  height: auto !important;
+  min-height: min-content !important;
 }
-.composer-actions button.primary:hover { background: #ffd21e !important; }
-.composer-actions button.stop {
-  border-radius: 999px !important;
+.hint, .hint .prose {
+  height: auto !important;
+  min-height: min-content !important;
+  overflow: visible !important;
+}
+.stage button, .composer button {
+  display: inline-flex !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  line-height: 28px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+}
+.stage button.primary, .composer button.primary {
+  background: #f4f4f5 !important;
+  color: #111111 !important;
+  border: 1px solid #f4f4f5 !important;
+}
+.stage button.primary:hover, .composer button.primary:hover {
+  background: #ffffff !important;
 }
 .hint { font-size: 13px !important; color: #a1a1aa !important; background: transparent !important; }
 .composer textarea, .composer input, .stage textarea, .stage input {
@@ -385,10 +427,118 @@ footer, .built-with { display: none !important; }
   padding: 0 !important;
   font-weight: 600 !important;
 }
+.editors {
+  flex-wrap: wrap !important;
+  align-items: stretch !important;
+}
+.editors > * {
+  flex: 1 1 min(100%, 22rem) !important;
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+.rank-note { margin: 4px 0 !important; font-size: 12px !important; color: #a1a1aa !important; }
+.oa-chart {
+  position: relative;
+  width: min(100%, 26rem);
+  height: clamp(8.5rem, 22dvh, 13rem);
+  border: 1px solid #2c2c34;
+  border-radius: 8px;
+  background: #16161a;
+  overflow: visible;
+  margin: 4px 0 8px;
+}
+.oa-line { width: min(100%, 40rem); height: clamp(9rem, 26dvh, 15rem); }
+.oa-chart-title {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  right: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fafafa;
+  z-index: 1;
+}
+.oa-chart-title span { font-weight: 450; color: #a1a1aa; margin-left: 6px; }
+.oa-empty-note { margin: 36px 10px 0; font-size: 12px; color: #a1a1aa; }
+.oa-plot { position: absolute; left: 8px; right: 8px; top: 26px; bottom: 22px; }
+.oa-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.oa-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  padding: 5px;
+  background-clip: content-box;
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  cursor: pointer;
+  z-index: 2;
+}
+.oa-name {
+  position: absolute;
+  left: 14px;
+  top: -2px;
+  font-size: 10px;
+  color: #d4d4d8;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.oa-tip {
+  display: none;
+  position: absolute;
+  left: 16px;
+  bottom: 10px;
+  z-index: 6;
+  width: max-content;
+  max-width: 14rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #09090b;
+  border: 1px solid #3f3f46;
+  color: #fafafa;
+  font-size: 11px;
+  line-height: 1.35;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.oa-dot:hover { z-index: 7; }
+.oa-dot:hover .oa-tip { display: block; }
+.oa-legend {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 10px;
+  color: #a1a1aa;
+}
+.oa-legend i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.pick-row .wrap, .pick-row fieldset {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 2px 12px !important;
+}
+.pick-row label { font-size: 12px !important; }
+.info-strip {
+  border: 1px solid #2c2c34;
+  border-radius: 14px;
+  padding: 8px 12px;
+  margin: 0 0 8px;
+  background: #16161a;
+}
 .snippet-code {
-  height: clamp(7rem, 28dvh, 34rem) !important;
-  max-height: 32dvh !important;
-  min-height: 0 !important;
+  height: clamp(8rem, 36dvh, 32rem) !important;
+  max-height: 48dvh !important;
+  min-height: 8rem !important;
   overflow: hidden !important;
   border: 1px solid #2c2c34 !important;
   border-radius: 16px !important;
@@ -399,9 +549,9 @@ footer, .built-with { display: none !important; }
 .snippet-code .ace_editor,
 .snippet-code textarea,
 .snippet-code pre {
-  height: clamp(7rem, 28dvh, 34rem) !important;
-  max-height: 32dvh !important;
-  min-height: 0 !important;
+  height: clamp(8rem, 36dvh, 32rem) !important;
+  max-height: 48dvh !important;
+  min-height: 8rem !important;
 }
 .output-card textarea {
   height: clamp(3rem, 12dvh, 8rem) !important;
@@ -545,6 +695,32 @@ body[data-app-theme="light"] .source-nav label:has(input:checked) {
   background: #ffe14a !important;
   color: #111 !important;
 }
+body[data-app-theme="light"] .info-strip {
+  background: #ffffff;
+  border-color: #e4e4e7;
+  color: #18181b;
+}
+body[data-app-theme="light"] .pareto-note,
+body[data-app-theme="light"] .rank-note,
+body[data-app-theme="light"] .oa-empty-note,
+body[data-app-theme="light"] .oa-chart-title span,
+body[data-app-theme="light"] .oa-legend { color: #52525b; }
+body[data-app-theme="light"] .oa-chart {
+  background: #ffffff;
+  border-color: #e5e5e5;
+}
+body[data-app-theme="light"] .oa-chart-title,
+body[data-app-theme="light"] .oa-name { color: #18181b; }
+body[data-app-theme="light"] .oa-tip {
+  background: #ffffff;
+  color: #18181b;
+  border-color: #e5e5e5;
+}
+body[data-app-theme="light"] .stage button.primary,
+body[data-app-theme="light"] .composer button.primary {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
 body[data-app-theme="light"] .composer {
   background: #ffffff !important;
   border-color: #e4e4e7 !important;
@@ -563,23 +739,28 @@ body[data-app-theme="light"] .aa-table td { color: #18181b; border-bottom-color:
 body[data-app-theme="light"] .aa-table tr:nth-child(odd) { background: #fff; }
 body[data-app-theme="light"] .aa-table tr:nth-child(even) { background: #fafafa; }
 
-@media (max-width: 860px) {
+@media (max-width: 760px) {
   .studio {
-    flex-direction: column !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
   }
   .rail {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
     width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    flex: 0 0 auto !important;
-    min-height: auto !important;
-    max-height: none !important;
+    max-height: 34dvh !important;
     border-right: none !important;
     border-bottom: 1px solid #24242a !important;
   }
+  .main {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
   .rail-nav .wrap {
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr)) !important;
+  }
+  .composer {
+    max-height: 40dvh !important;
   }
 }
 """
@@ -844,43 +1025,17 @@ def refresh_system():
     )
 
 
-def load_aa_dashboard(aa_key: str):
-    try:
-        rows = fetch_aa_leaderboard(aa_key)
-        return aa_dashboard_html(rows), rows
-    except Exception as exc:
-        return aa_dashboard_html(error=str(exc)), []
-
-
-def show_cached_suggestions(category: str, cached_rows: list | None):
-    return suggestions_html(category, cached_rows or None)
-
-
-def load_suggestions(category: str, aa_key: str, cached_rows: list | None):
-    if category == "Local (Ollama)":
-        return suggestions_html(category), cached_rows or []
-    rows = cached_rows or []
-    err = None
-    if not rows:
-        try:
-            rows = fetch_aa_leaderboard(aa_key)
-        except Exception as exc:
-            err = str(exc)
-            rows = []
-    return suggestions_html(category, rows or None, err), rows
-
-
 def show_section(name: str):
-    need_model = name in ("Snippet", "Repo")
+    working = name in ("Languages", "Repo")
     return (
-        gr.update(visible=need_model),
-        gr.update(visible=name == "Snippet"),
-        gr.update(visible=name == "Snippet"),
+        gr.update(visible=working),
+        gr.update(visible=name == "Models"),
+        gr.update(visible=name == "Languages"),
+        gr.update(visible=name == "Languages"),
         gr.update(visible=name == "Repo"),
         gr.update(visible=name == "Repo"),
+        gr.update(visible=name == "Performance"),
         gr.update(visible=name == "System"),
-        gr.update(visible=name == "Scores"),
-        gr.update(visible=name == "Suggest"),
     )
 
 
@@ -1212,22 +1367,23 @@ def format_llm_error(exc: Exception) -> str:
     return f"Conversion failed: {exc}"
 
 
-def convert_snippet_ui(python_code, provider, model, api_key):
-    if not (python_code or "").strip():
-        yield "Paste Python on the left first.", "Paste Python first.", token_bar_markdown(model, LAST_USAGE)
+def convert_snippet_ui(source, provider, model, api_key, src_lang="Python", dst_lang="C++"):
+    if not (source or "").strip():
+        yield "Paste source on the left first.", "Paste source first.", token_bar_markdown(model, LAST_USAGE)
         return
     try:
         result = ""
-        yield "", "Converting…", token_bar_markdown(model, LAST_USAGE)
-        for result in convert_snippet(provider, model, api_key, python_code):
-            yield result, "Converting…", token_bar_markdown(model, LAST_USAGE)
+        yield "", f"Converting {src_lang} → {dst_lang}…", token_bar_markdown(model, LAST_USAGE)
+        for result in convert_snippet(provider, model, api_key, source, src_lang, dst_lang):
+            yield result, f"Converting {src_lang} → {dst_lang}…", token_bar_markdown(model, LAST_USAGE)
         cost = format_cost_line(
             LAST_USAGE.get("model") or model,
             int(LAST_USAGE.get("prompt_tokens") or 0),
             int(LAST_USAGE.get("completion_tokens") or 0),
             LAST_USAGE.get("elapsed_s"),
         )
-        yield result, f"**Done.** C++ conversion finished.\n\n{cost}", token_bar_markdown(model, LAST_USAGE)
+        append_log({"action": "convert", "model": model, "src": src_lang, "dst": dst_lang, "usage": dict(LAST_USAGE)})
+        yield result, f"**Done.** {src_lang} → {dst_lang}.\n\n{cost}", token_bar_markdown(model, LAST_USAGE)
     except Exception as exc:
         yield format_llm_error(exc), "Conversion failed.", token_bar_markdown(model, LAST_USAGE)
 
@@ -1340,19 +1496,269 @@ def build_repo(project_dir: str, repeats: float = 1):
         yield f"Build tool not found: {exc}\nInstall a C++ compiler (see System tab)."
 
 
+_EDITOR_LANG = {lang for lang in gr.Code.languages if lang}
+
+
+def _editor_lang(name: str):
+    lang = HIGHLIGHT.get(name or "", "python")
+    return lang if lang in _EDITOR_LANG else None
+
+
+def apply_languages(src_lang: str, dst_lang: str):
+    tool = toolchain_for(dst_lang)
+    needs = bool(tool.get("needs_compile"))
+    if tool.get("hint"):
+        hint = tool["hint"]
+    elif needs:
+        hint = f"{dst_lang} is compiled on this machine with the commands below."
+    else:
+        hint = f"{dst_lang} runs without a compiler."
+    compile_cmd = tool.get("compile") or ""
+    run_cmd = tool.get("run") or ""
+    return (
+        gr.update(language=_editor_lang(src_lang), label=src_lang),
+        gr.update(language=_editor_lang(dst_lang), label=dst_lang),
+        compile_cmd,
+        run_cmd,
+        hint,
+        gr.update(visible=needs),
+    )
+
+
+def run_count(repeats) -> int:
+    try:
+        times = int(float(repeats))
+    except (TypeError, ValueError):
+        times = 1
+    return max(1, min(10, times))
+
+
+def work_brief(mode: str, provider: str, model: str, src_lang: str, dst_lang: str, repeats) -> str:
+    times = run_count(repeats)
+    word = "time" if times == 1 else "times"
+    return (
+        f"**{mode or 'Cloud'}** · **{provider or '—'}** · `{model or '—'}`  \n"
+        f"{src_lang or 'Python'} → {dst_lang or 'C++'} · evaluate **{times}** {word}"
+    )
+
+
+def execute_action(
+    action,
+    src_code,
+    dst_code,
+    src_lang,
+    dst_lang,
+    provider,
+    model,
+    api_key,
+    compile_text,
+    run_text,
+):
+    action = action or "Convert"
+    if action == "Convert":
+        for out, status, tok in convert_snippet_ui(src_code, provider, model, api_key, src_lang, dst_lang):
+            yield out, status, gr.update(), gr.update(), gr.update(), tok
+        return
+    if action == "Run input":
+        if src_lang == "Python":
+            for text in run_python(src_code):
+                yield gr.update(), f"Running {src_lang}…", text, gr.update(), gr.update(), gr.update()
+            return
+        tool = toolchain_for(src_lang)
+        yield gr.update(), f"Running {src_lang}…", "", gr.update(), gr.update(), gr.update()
+        log = _run_generated(src_lang, src_code, tool.get("compile") or "", tool.get("run") or "")
+        yield gr.update(), f"Ran {src_lang}.", log, gr.update(), gr.update(), gr.update()
+        return
+    if action == "Compile & run":
+        if dst_lang == "C++":
+            for log, md, cleaned in compile_and_run_snippet(
+                dst_code, compile_text, run_text, 1, provider, model, api_key
+            ):
+                yield cleaned, "Compile & run", gr.update(), log, md, gr.update()
+            return
+        log = _run_generated(dst_lang, dst_code, compile_text, run_text)
+        yield dst_code, "Compile & run finished.", gr.update(), log, log, gr.update()
+        return
+    if src_lang == "Python" and dst_lang == "C++":
+        for py_out, cpp_log, md, cleaned in compare_snippet(
+            src_code, dst_code, compile_text, run_text, 1, provider, model, api_key
+        ):
+            yield cleaned, "Compare", py_out, cpp_log, md, gr.update()
+        return
+    yield (
+        gr.update(),
+        "Compare times Python against C++. For other pairs, use Compile & run.",
+        gr.update(),
+        gr.update(),
+        "Compare is wired for Python → C++.",
+        gr.update(),
+    )
+
+
+def _run_generated(lang: str, code: str, compile_text: str, run_text: str) -> str:
+    if not (code or "").strip():
+        return "Nothing to run."
+    GENERATED.mkdir(parents=True, exist_ok=True)
+    name = SOURCE_FILE.get(lang, "main.txt")
+    text = sanitize_cpp_source(code) if lang == "C++" else code
+    (GENERATED / name).write_text(text, encoding="utf-8")
+    log = ""
+    if (compile_text or "").strip() and toolchain_for(lang).get("needs_compile"):
+        try:
+            compile_cmd = parse_cmd(compile_text)
+        except ValueError as exc:
+            return str(exc)
+        chunk = ""
+        code_rc = 1
+        for chunk, done, code_rc, _elapsed in stream_command(compile_cmd, cwd=GENERATED, timeout=180):
+            if done:
+                break
+        log = f"$ {compile_text}\n{chunk or ''}"
+        if code_rc:
+            return log + f"\nCompile failed (exit {code_rc})"
+    if not (run_text or "").strip():
+        return log or "No run command for this language."
+    try:
+        run_cmd = parse_cmd(run_text)
+    except ValueError as exc:
+        return str(exc)
+    chunk = ""
+    rc = 1
+    for chunk, done, rc, elapsed in stream_command(run_cmd, cwd=GENERATED, timeout=180):
+        if done:
+            break
+    log += f"\n$ {run_text}\n{chunk or ''}\n[wall {elapsed:.3f}s exit {rc}]"
+    append_log({"action": "run", "lang": lang, "exit": rc})
+    return log
+
+
+def rank_models_ui(mode, aa_key, factor):
+    weights = RANK_FACTORS.get(factor) or RANK_FACTORS["Balanced"]
+    cards, labels, top = rank_top5(mode, aa_key, *weights)
+    return cards, gr.update(choices=labels, value=labels), top, pareto_scatter(top)
+
+
+def _apply_labels(labels, top):
+    provider, model = pick_label(labels[0], top or [])
+    if not provider or not model:
+        return gr.update(), gr.update(), gr.update(value=labels), "Could not match that model."
+    models, value = resolved_models(provider, prefer=model)
+    if model not in models:
+        models = [model, *models]
+        value = model
+    names = ", ".join(labels)
+    return (
+        gr.update(value=provider),
+        gr.update(choices=models, value=value),
+        gr.update(value=labels),
+        f"Using {len(labels)}: {names}. Convert uses {model}.",
+    )
+
+
+def use_all_models(top):
+    labels = [f"{r['provider']} · {r['model']}" for r in (top or [])]
+    if not labels:
+        return gr.update(), gr.update(), gr.update(), "Show top 5 first."
+    return _apply_labels(labels, top)
+
+
+def use_picked(picked, top):
+    labels = [x for x in (picked or []) if x]
+    if not labels:
+        return gr.update(), gr.update(), gr.update(), "Select one or more of the top 5, or Use all."
+    return _apply_labels(labels, top)
+
+
+def compare_top_models(src, src_lang, dst_lang, top, picked, repeats, api_key, compile_text, metric):
+    rows: list[dict] = []
+    want = {x for x in (picked or []) if x}
+    chosen = [r for r in (top or []) if f"{r['provider']} · {r['model']}" in want]
+    if not top:
+        msg = "Show top 5 first, then evaluate."
+        yield msg, chart_svg([], metric), msg, rows
+        return
+    if not chosen:
+        msg = "Select one or more of the top 5, or Use all."
+        yield msg, chart_svg([], metric), msg, rows
+        return
+    if not (src or "").strip():
+        msg = "The sample on Languages is empty."
+        yield msg, chart_svg([], metric), msg, rows
+        return
+    n = run_count(repeats)
+    for row in chosen:
+        for i in range(1, n + 1):
+            status = f"{row['model']} · run {i}/{n}"
+            yield status, chart_svg(rows, metric), summarize(rows) if rows else status, rows
+            started = time.perf_counter()
+            out = ""
+            accuracy = 0.0
+            try:
+                for out in convert_snippet(
+                    row["provider"], row["model"], api_key, src, src_lang, dst_lang
+                ):
+                    pass
+                accuracy = 1.0 if (out or "").strip() else 0.0
+                if accuracy and dst_lang == "C++" and (compile_text or "").strip():
+                    cleaned = sanitize_cpp_source(out)
+                    (GENERATED / "main.cpp").write_text(cleaned, encoding="utf-8")
+                    rc = 1
+                    for _chunk, done, rc, _elapsed in stream_command(
+                        parse_cmd(compile_text), cwd=GENERATED, timeout=120
+                    ):
+                        if done:
+                            break
+                    accuracy = 1.0 if rc == 0 else 0.0
+            except Exception:
+                accuracy = 0.0
+            elapsed = time.perf_counter() - started
+            tokens = int(LAST_USAGE.get("prompt_tokens") or 0) + int(LAST_USAGE.get("completion_tokens") or 0)
+            rows.append(
+                {
+                    "model": row["model"],
+                    "provider": row["provider"],
+                    "run": i,
+                    "accuracy": accuracy,
+                    "latency": round(elapsed, 3),
+                    "tokens": tokens or row.get("tokens") or 0,
+                    "cost": row.get("cost") or 0,
+                }
+            )
+            summary = summarize(rows)
+            yield status, chart_svg(rows, metric), summary, rows
+    append_log({"action": "compare-top5", "runs": len(rows), "src": src_lang, "dst": dst_lang})
+    yield "Finished.", chart_svg(rows, metric), summarize(rows), rows
+
+
+def redraw_chart(rows, metric):
+    return chart_svg(rows or [], metric or "accuracy")
+
+
+def export_bench(rows):
+    if not rows:
+        return "No runs to export."
+    return export_runs(rows)
+
+
+def both_briefs(mode, provider, model, src_lang, dst_lang, repeats):
+    text = work_brief(mode, provider, model, src_lang, dst_lang, repeats)
+    return text, text
+
+
 def build_ui():
     report, default_compile, default_run = refresh_system()
     providers = list(PROVIDERS.keys())
     first_provider = providers[0]
     first_models, _ = keep_working_models(PROVIDERS[first_provider]["models"])
+    opening = work_brief("Cloud", first_provider, first_models[0], "Python", "C++", 1)
 
     with gr.Blocks(title="CppLift", css=CSS, theme=THEME, fill_width=True, js=LOAD_JS) as ui:
         with gr.Row(elem_classes=["studio"]):
             with gr.Column(elem_classes=["rail"], scale=0, min_width=120):
                 gr.HTML(BRAND_HTML)
                 section = gr.Radio(
-                    ["Snippet", "Repo", "System", "Scores", "Suggest"],
-                    value="Snippet",
+                    ["Models", "Languages", "Repo", "Performance", "System"],
+                    value="Models",
                     show_label=False,
                     container=False,
                     elem_classes=["hf-nav", "rail-nav"],
@@ -1364,47 +1770,131 @@ def build_ui():
                     container=True,
                 )
                 gr.Markdown(
-                    "Python in. C++ out. Pick a model in the bar and generate.",
+                    "Models, then Languages or Repo. Performance is the run chart.",
                     elem_classes=["rail-foot"],
                 )
 
             with gr.Column(elem_classes=["main"]):
                 with gr.Column(elem_classes=["stage"]):
-                    with gr.Group(visible=True, elem_classes=["workspace"]) as snippet_panel:
+                    with gr.Group(visible=True, elem_classes=["workspace", "models-panel"]) as models_panel:
                         gr.Markdown(
-                            "### Snippet\nPaste Python, generate C++, then compile on this machine.",
+                            "### Models\nCloud or local. Rank a top 5, use all or a subset, and type how many runs.",
                             elem_classes=["stage-title"],
                         )
-                        with gr.Row(equal_height=True):
+                        source_tab = gr.Radio(
+                            ["Cloud", "Local"],
+                            value="Cloud",
+                            show_label=False,
+                            elem_classes=["hf-nav", "source-nav"],
+                        )
+                        with gr.Row():
+                            provider = gr.Dropdown(providers, value=first_provider, label="Provider", scale=2)
+                            model = gr.Dropdown(first_models, value=first_models[0], label="Model", scale=3)
+                            api_key = gr.Textbox(
+                                label="API key",
+                                type="password",
+                                placeholder=key_placeholder(first_provider),
+                                scale=3,
+                            )
+                        token_bar = gr.Markdown(token_bar_markdown(first_models[0]), elem_classes=["hint"])
+                        with gr.Group(visible=True) as cloud_panel:
+                            fetch_models_btn = gr.Button("Refresh catalog", size="sm")
+                            fetch_models_log = gr.Markdown(elem_classes=["hint"])
+                        with gr.Group(visible=False, elem_classes=["local-panel"]) as local_panel:
+                            local_html = gr.HTML()
+                            local_select = gr.Dropdown(
+                                label="Download this local model",
+                                choices=[],
+                                value=None,
+                            )
+                            with gr.Row(elem_classes=["tiny-actions"]):
+                                pull_local_btn = gr.Button("Download & use", variant="primary", size="sm")
+                                stop_pull_btn = gr.Button("Stop download & clean", variant="stop", size="sm")
+                        with gr.Row():
+                            rank_factor = gr.Dropdown(
+                                list(RANK_FACTORS),
+                                value="Balanced",
+                                label="Rank by",
+                                scale=2,
+                            )
+                            bench_n = gr.Number(
+                                value=1,
+                                label="Runs",
+                                precision=0,
+                                minimum=1,
+                                maximum=10,
+                                scale=1,
+                            )
+                            aa_key_box = gr.Textbox(
+                                label="Scores key (optional)",
+                                type="password",
+                                placeholder="Artificial Analysis key, or leave blank if it is in .env",
+                                scale=3,
+                            )
+                        with gr.Row(elem_classes=["tiny-actions"]):
+                            rank_btn = gr.Button("Show top 5", variant="primary", size="sm")
+                            use_all_btn = gr.Button("Use all", size="sm")
+                            use_model_btn = gr.Button("Use selected", size="sm")
+                            compare5_btn = gr.Button("Evaluate", size="sm")
+                        rank_cards = gr.HTML("Pick a factor, then Show top 5.")
+                        picked = gr.CheckboxGroup(
+                            label="Top 5",
+                            choices=[],
+                            value=[],
+                            elem_classes=["pick-row"],
+                        )
+                        bench_status = gr.Markdown(
+                            "Type a run count from 1 to 10. Evaluate uses the checked models on the Languages sample. Open Performance for the line chart."
+                        )
+                        rank_chart = gr.HTML(pareto_scatter([]))
+                        rank_state = gr.State([])
+
+                    with gr.Group(visible=False, elem_classes=["workspace", "work-page"]) as languages_panel:
+                        gr.Markdown(
+                            "### Languages\nInput, output, and the two editors. Compiler commands appear when the output needs them.",
+                            elem_classes=["stage-title"],
+                        )
+                        code_brief = gr.Markdown(opening, elem_classes=["info-strip"])
+                        with gr.Row():
+                            in_lang = gr.Dropdown(LANGUAGES, value="Python", label="Input language", scale=1)
+                            out_lang = gr.Dropdown(LANGUAGES, value="C++", label="Output language", scale=1)
+                        tool_hint = gr.Markdown("C++ is compiled on this machine with the commands below.")
+                        with gr.Group(visible=True) as compiler_box:
+                            with gr.Row():
+                                compile_box = gr.Textbox(value=default_compile, label="Compile command")
+                                run_box = gr.Textbox(value=default_run, label="Run command")
+                        with gr.Row(equal_height=True, elem_classes=["editors"]):
                             python_box = gr.Code(
                                 value=SAMPLE_PYTHON,
                                 language="python",
                                 label="Python",
-                                lines=18,
+                                lines=16,
                                 elem_classes=["snippet-code"],
                             )
                             cpp_box = gr.Code(
                                 language="cpp",
                                 label="C++",
-                                lines=18,
+                                lines=16,
                                 elem_classes=["snippet-code"],
                             )
                         with gr.Row():
-                            py_out = gr.Textbox(label="Python output", lines=6, elem_classes=["output-card"])
-                            cpp_out = gr.Textbox(label="C++ compile / run log", lines=6, elem_classes=["output-card"])
+                            py_out = gr.Textbox(label="Input run output", lines=5, elem_classes=["output-card"])
+                            cpp_out = gr.Textbox(label="Converted compile / run log", lines=5, elem_classes=["output-card"])
                         compare_md = gr.Markdown(
-                            "Timing, tokens, latency, and estimated $ appear here after convert, compile, or compare.",
+                            "Timing, tokens, latency, and estimated $ appear here after a run.",
                             elem_classes=["stage-kicker"],
                         )
                         convert_status = gr.Markdown(
-                            "Convert a snippet to generate C++.",
+                            "Choose an action in the bar, then Run.",
                             elem_classes=["stage-kicker"],
                         )
 
-                    with gr.Group(visible=False, elem_classes=["workspace"]) as repo_panel:
+                    with gr.Group(visible=False, elem_classes=["workspace", "work-page"]) as repo_panel:
+                        gr.Markdown("### Repo", elem_classes=["stage-title"])
+                        repo_brief = gr.Markdown(opening, elem_classes=["info-strip"])
                         gr.Markdown(
-                            "### Repo\nPoint at a small Python project. CppLift writes C++ under `generated/cpp_project`.",
-                            elem_classes=["stage-title"],
+                            "Point at a small project. Output is written under `generated/cpp_project`.",
+                            elem_classes=["stage-kicker"],
                         )
                         with gr.Row():
                             repo_path = gr.Textbox(
@@ -1414,95 +1904,54 @@ def build_ui():
                             )
                             repo_zip = gr.File(label="Or upload a .zip", file_types=[".zip"], type="filepath", scale=2)
                         with gr.Row():
-                            repo_preview = gr.Textbox(label="Generated C++ preview", lines=16, scale=3)
+                            repo_preview = gr.Textbox(label="Generated preview", lines=16, scale=3)
                             with gr.Column(scale=2):
                                 repo_dir = gr.Textbox(label="Output folder")
                                 repo_log = gr.Textbox(label="Status / build log", lines=12)
 
+                    with gr.Group(visible=False, elem_classes=["workspace"]) as performance_panel:
+                        gr.Markdown(
+                            "### Performance\nOne line per model. Hover a point for accuracy, latency, tokens, and cost.",
+                            elem_classes=["stage-title"],
+                        )
+                        with gr.Row():
+                            chart_metric = gr.Dropdown(
+                                ["accuracy", "latency", "tokens", "cost"],
+                                value="accuracy",
+                                label="Chart metric",
+                                scale=2,
+                            )
+                            export_btn = gr.Button("Export CSV", size="sm", scale=0)
+                        chart_html = gr.HTML(chart_svg([], "accuracy"))
+                        metrics_md = gr.Markdown("Accuracy, latency, tokens, cost, and throughput appear after evaluation.")
+                        export_path = gr.Textbox(label="Export path", interactive=False)
+                        bench_state = gr.State([])
+
                     with gr.Group(visible=False, elem_classes=["workspace"]) as system_panel:
                         gr.Markdown(
-                            "### System\nToolchain detected on this machine. Edit flags if you need a different compile.",
+                            "### System\nWhat this machine reports. Compile commands for the output language live on Languages.",
                             elem_classes=["stage-title"],
                         )
                         sys_box = gr.Textbox(value=report, label="System report", lines=16)
-                        with gr.Row():
-                            compile_box = gr.Textbox(value=default_compile, label="Snippet compile command")
-                            run_box = gr.Textbox(value=default_run, label="Snippet run command")
-                        refresh_btn = gr.Button("Re-scan this machine")
+                        refresh_btn = gr.Button("Re-scan this machine", size="sm")
 
-                    with gr.Group(visible=False, elem_classes=["workspace"]) as aa_panel:
-                        gr.Markdown(
-                            "### Scores\nIndependent scores from [Artificial Analysis](https://artificialanalysis.ai/leaderboards/models). "
-                            "Nothing is downloaded until you load the leaderboard.",
-                            elem_classes=["stage-title"],
+                with gr.Group(visible=False, elem_classes=["composer"]) as model_bar:
+                    with gr.Row(visible=False, elem_classes=["composer-actions"]) as snippet_actions:
+                        action = gr.Dropdown(
+                            ["Convert", "Run input", "Compile & run", "Compare"],
+                            value="Convert",
+                            label="Action",
+                            scale=2,
                         )
-                        with gr.Row():
-                            aa_key_box = gr.Textbox(
-                                label="Artificial Analysis API key",
-                                type="password",
-                                placeholder="Paste x-api-key, or leave blank if already in .env",
-                                scale=3,
-                            )
-                            load_aa_btn = gr.Button("Load leaderboard", variant="primary", scale=1)
-                        aa_html = gr.HTML(value=aa_dashboard_html())
-
-                    with gr.Group(visible=False, elem_classes=["workspace"]) as suggest_panel:
-                        gr.Markdown(
-                            "### Suggest\nPick a job. Uses Artificial Analysis ranks when loaded; otherwise built-in picks.",
-                            elem_classes=["stage-title"],
-                        )
-                        with gr.Row():
-                            suggest_cat = gr.Dropdown(
-                                SUGGESTION_CATEGORIES,
-                                value=SUGGESTION_CATEGORIES[0],
-                                label="Category",
-                                scale=3,
-                            )
-                            suggest_btn = gr.Button("Get suggestions", variant="primary", scale=1)
-                        suggest_html = gr.HTML(value=suggestions_html(SUGGESTION_CATEGORIES[0]))
-
-                with gr.Group(visible=True, elem_classes=["composer"]) as model_bar:
-                    source_tab = gr.Radio(
-                        ["Cloud", "Local"],
-                        value="Cloud",
-                        show_label=False,
-                        elem_classes=["hf-nav", "source-nav"],
-                    )
-                    with gr.Row():
-                        provider = gr.Dropdown(providers, value=first_provider, label="Provider", scale=2)
-                        model = gr.Dropdown(first_models, value=first_models[0], label="Model", scale=3)
-                        api_key = gr.Textbox(
-                            label="API key",
-                            type="password",
-                            placeholder=key_placeholder(first_provider),
-                            scale=3,
-                        )
-                    token_bar = gr.Markdown(token_bar_markdown(first_models[0]), elem_classes=["hint"])
-                    with gr.Group(visible=True) as cloud_panel:
-                        fetch_models_btn = gr.Button("Refresh catalog", scale=0, min_width=0)
-                        fetch_models_log = gr.Markdown(elem_classes=["hint"])
-                    with gr.Group(visible=False, elem_classes=["local-panel"]) as local_panel:
-                        local_html = gr.HTML()
-                        local_select = gr.Radio(
-                            label="Suggested local models",
-                            choices=[],
-                            value=None,
-                        )
-                        with gr.Row(elem_classes=["composer-actions"]):
-                            pull_local_btn = gr.Button("Download & use", variant="primary")
-                            stop_pull_btn = gr.Button("Stop download & clean", variant="stop")
-                    with gr.Row(visible=True, elem_classes=["composer-actions"]) as snippet_actions:
-                        convert_btn = gr.Button("Convert to C++", variant="primary", scale=1, min_width=0)
-                        run_py_btn = gr.Button("Run Python", scale=1, min_width=0)
-                        run_cpp_btn = gr.Button("Compile & run", scale=1, min_width=0)
-                        compare_btn = gr.Button("Compare both", scale=1, min_width=0)
-                        stop_run_btn = gr.Button("Stop", variant="stop", scale=1, min_width=0)
-                        repeats = gr.Slider(1, 5, value=3, step=1, label="C++ repeats", scale=2, min_width=0)
+                        run_btn = gr.Button("Run", variant="primary", size="sm", scale=0, min_width=0)
+                        stop_run_btn = gr.Button("Stop", variant="stop", size="sm", scale=0, min_width=0)
                     with gr.Row(visible=False, elem_classes=["composer-actions"]) as repo_actions:
-                        convert_repo_btn = gr.Button("Convert repo to C++", variant="primary", scale=1, min_width=0)
-                        build_repo_btn = gr.Button("Build & run", scale=1, min_width=0)
-                        stop_repo_btn = gr.Button("Stop run", variant="stop", scale=1, min_width=0)
-                        repo_repeats = gr.Slider(1, 5, value=3, step=1, label="C++ repeats", scale=2, min_width=0)
+                        convert_repo_btn = gr.Button("Convert repo", variant="primary", size="sm", scale=0, min_width=0)
+                        build_repo_btn = gr.Button("Build & run", size="sm", scale=0, min_width=0)
+                        stop_repo_btn = gr.Button("Stop run", variant="stop", size="sm", scale=0, min_width=0)
+
+        brief_inputs = [source_tab, provider, model, in_lang, out_lang, bench_n]
+        brief_outputs = [code_brief, repo_brief]
 
         fetch_models_btn.click(
             refresh_live_models,
@@ -1522,7 +1971,7 @@ def build_ui():
                 local_select,
                 local_html,
             ],
-        )
+        ).then(both_briefs, inputs=brief_inputs, outputs=brief_outputs)
         pull_evt = pull_local_btn.click(
             download_and_use_local,
             inputs=local_select,
@@ -1547,65 +1996,93 @@ def build_ui():
                 local_select,
                 local_html,
             ],
+        ).then(both_briefs, inputs=brief_inputs, outputs=brief_outputs)
+        model.change(token_info_for, inputs=model, outputs=token_bar).then(
+            both_briefs, inputs=brief_inputs, outputs=brief_outputs
         )
-        model.change(token_info_for, inputs=model, outputs=token_bar)
-        aa_state = gr.State([])
         refresh_btn.click(refresh_system, outputs=[sys_box, compile_box, run_box])
-        load_aa_btn.click(load_aa_dashboard, inputs=aa_key_box, outputs=[aa_html, aa_state])
-        suggest_btn.click(
-            load_suggestions,
-            inputs=[suggest_cat, aa_key_box, aa_state],
-            outputs=[suggest_html, aa_state],
-        )
-        suggest_cat.change(
-            show_cached_suggestions,
-            inputs=[suggest_cat, aa_state],
-            outputs=suggest_html,
-        )
 
         section.change(
             show_section,
             inputs=section,
             outputs=[
                 model_bar,
-                snippet_panel,
+                models_panel,
+                languages_panel,
                 snippet_actions,
                 repo_panel,
                 repo_actions,
+                performance_panel,
                 system_panel,
-                aa_panel,
-                suggest_panel,
             ],
         )
 
-        convert_evt = convert_btn.click(
-            convert_snippet_ui,
-            inputs=[python_box, provider, model, api_key],
-            outputs=[cpp_box, convert_status, token_bar],
+        in_lang.change(
+            apply_languages,
+            inputs=[in_lang, out_lang],
+            outputs=[python_box, cpp_box, compile_box, run_box, tool_hint, compiler_box],
+        ).then(both_briefs, inputs=brief_inputs, outputs=brief_outputs)
+        out_lang.change(
+            apply_languages,
+            inputs=[in_lang, out_lang],
+            outputs=[python_box, cpp_box, compile_box, run_box, tool_hint, compiler_box],
+        ).then(both_briefs, inputs=brief_inputs, outputs=brief_outputs)
+        bench_n.change(both_briefs, inputs=brief_inputs, outputs=brief_outputs)
+        run_evt = run_btn.click(
+            execute_action,
+            inputs=[
+                action,
+                python_box,
+                cpp_box,
+                in_lang,
+                out_lang,
+                provider,
+                model,
+                api_key,
+                compile_box,
+                run_box,
+            ],
+            outputs=[cpp_box, convert_status, py_out, cpp_out, compare_md, token_bar],
         )
-        run_py_evt = run_py_btn.click(run_python, inputs=python_box, outputs=py_out)
-        run_cpp_evt = run_cpp_btn.click(
-            compile_and_run_snippet,
-            inputs=[cpp_box, compile_box, run_box, repeats, provider, model, api_key],
-            outputs=[cpp_out, compare_md, cpp_box],
+        rank_btn.click(
+            rank_models_ui,
+            inputs=[source_tab, aa_key_box, rank_factor],
+            outputs=[rank_cards, picked, rank_state, rank_chart],
         )
-        compare_evt = compare_btn.click(
-            compare_snippet,
-            inputs=[python_box, cpp_box, compile_box, run_box, repeats, provider, model, api_key],
-            outputs=[py_out, cpp_out, compare_md, cpp_box],
+        use_all_btn.click(
+            use_all_models,
+            inputs=rank_state,
+            outputs=[provider, model, picked, bench_status],
         )
+        use_model_btn.click(
+            use_picked,
+            inputs=[picked, rank_state],
+            outputs=[provider, model, picked, bench_status],
+        )
+        compare5_evt = compare5_btn.click(
+            compare_top_models,
+            inputs=[python_box, in_lang, out_lang, rank_state, picked, bench_n, api_key, compile_box, chart_metric],
+            outputs=[bench_status, chart_html, metrics_md, bench_state],
+        )
+
+        def _stop_runs():
+            note = kill_active()
+            return note, "Stopped."
+
         stop_run_btn.click(
-            kill_active,
-            outputs=py_out,
-            cancels=[convert_evt, run_py_evt, run_cpp_evt, compare_evt],
+            _stop_runs,
+            outputs=[py_out, bench_status],
+            cancels=[run_evt, compare5_evt],
         )
+        chart_metric.change(redraw_chart, inputs=[bench_state, chart_metric], outputs=chart_html)
+        export_btn.click(export_bench, inputs=bench_state, outputs=export_path)
         convert_repo_evt = convert_repo_btn.click(
             convert_repo_ui,
             inputs=[repo_path, repo_zip, provider, model, api_key],
             outputs=[repo_preview, repo_dir, repo_log],
         )
         build_repo_evt = build_repo_btn.click(
-            build_repo, inputs=[repo_dir, repo_repeats], outputs=repo_log
+            build_repo, inputs=[repo_dir], outputs=repo_log
         )
         stop_repo_btn.click(
             kill_active,
